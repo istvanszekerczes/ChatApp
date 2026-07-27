@@ -1,0 +1,26 @@
+.container {
+  display: grid;
+  grid-template-columns: 20rem 1fr 15rem;
+  background-color: #f4f6f9;
+}
+
+.sidebar-left {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-right: 1px solid #e0e0e0;
+}
+
+.chat-main-area {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.sidebar-right {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-left: 1px solid #e0e0e0;
+}
