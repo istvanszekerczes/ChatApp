@@ -1,1 +1,44 @@
-<p>register works!</p>
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Create Account</h2>
+    <p class="subtitle">Join the community and start chatting</p>
+
+    <form class="auth-form">
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="coolcoder99" required>
+      </div>
+
+      <div class="input-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="name@example.com" required>
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="create-chat-button submit-btn">
+        <span>Create Account</span>
+      </button>
+    </form>
+
+    <div class="divider">
+      <span>or continue with</span>
+    </div>
+
+    <div class="social-auth">
+      <a href="http://localhost:3000/auth/google" class="create-chat-button social-btn">
+        <span>Continue with Google</span>
+      </a>
+      <a href="http://localhost:3000/auth/facebook" class="create-chat-button social-btn">
+        <span>Continue with Facebook</span>
+      </a>
+    </div>
+
+    <p class="auth-footer">
+      Already have an account? <a routerLink="/login">Sign in</a>
+    </p>
+  </div>
+</div>

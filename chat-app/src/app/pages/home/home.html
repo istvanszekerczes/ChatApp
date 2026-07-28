@@ -1,14 +1,18 @@
 <div class="container">
-    <aside class="sidebar-left">
-        <app-profile></app-profile>
-        <app-create-chat></app-create-chat>
-        <app-direct-messages></app-direct-messages>
-        <app-group-chat-list></app-group-chat-list>
-    </aside>
+    <div class="sidebar-left">
+        <div class="sidebar-left-content">
+            <app-profile></app-profile>
+            <app-create-chat></app-create-chat>
+            <app-group-chat-list></app-group-chat-list>
+            <app-direct-messages></app-direct-messages>
+        </div>
+    </div>
     <div class="main-chat-area">
         <app-chat-area></app-chat-area>
     </div>
-    <aside class="sidebar-right">
+    <div class="sidebar-right">
+        <div class="sidebar-right-content">
         <app-user-list></app-user-list>
-    </aside>
+        </div>
+    </div>
 </div>
