@@ -1,8 +1,17 @@
 .button-container {
     display: flex;
     justify-content: center;
-    margin: 1rem auto;
+
 }
+
+.divider {
+        border-top: 1px solid #2d2d2f;
+        margin:auto;
+        width: 90%;
+        height: 1px;
+        align-items: center;
+        margin-top: 1rem;
+    }
 
 .create-chat-button {
     display: flex;
