@@ -21,10 +21,19 @@ model User {
   participants ChatParticipant[]
 }
 
+// Enum for the 4 types of chats
+enum ChatType {
+  DIRECT          
+  PUBLIC_GROUP    
+  PRIVATE_GROUP   
+  PROTECTED_GROUP 
+}
+
 model Chat {
   id           String            @id @default(uuid())
-  isGroup      Boolean           @default(false)
+  type         ChatType          @default(DIRECT)
   name         String?           
+  password     String?           
   createdAt    DateTime          @default(now())
   
   // Relations
@@ -40,7 +49,7 @@ model ChatParticipant {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, chatId]) //User can be added to the same chat once
+  @@unique([userId, chatId]) // A user can only be added to the same chat once
 }
 
 model Message {

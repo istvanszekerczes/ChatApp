@@ -1,13 +1,26 @@
 <div class="profile-container">
-    <div class="profile-actions">
-        <button class="btn-login" routerLink="/login">
-            <mat-icon>login</mat-icon>
-            Login
-        </button>
-        <button class="btn-register" routerLink="/register">
-            <mat-icon>person_add</mat-icon>
-            Register
-        </button>
-    </div>
+    @if (currentUser$ | async; as user) {
+        <div class="user-info">
+            <span class="logged-in-text">Logged in as: 
+                <br>
+                <strong>{{ user.username }}</strong>
+            </span>
+            <button class="btn-logout" (click)="onLogout()">
+                <mat-icon>logout</mat-icon>
+                Logout
+            </button>
+        </div>
+    } @else {
+        <div class="profile-actions">
+            <button class="btn-login" routerLink="/login">
+                <mat-icon>login</mat-icon>
+                Login
+            </button>
+            <button class="btn-register" routerLink="/register">
+                <mat-icon>person_add</mat-icon>
+                Register
+            </button>
+        </div>
+    }
     <div class="divider"></div>
 </div>
