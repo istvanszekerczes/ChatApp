@@ -1,1 +1,14 @@
-<input type="text" placeholder="Type a message..." />
+<div class="input-container">
+  <input
+    type="text"
+    placeholder="Type a message..."
+    [(ngModel)]="messageText"
+    (keyup.enter)="sendMessage()" />
+  <button
+    mat-icon-button
+    [disabled]="!messageText.trim()"
+    (click)="sendMessage()"
+    aria-label="Send message">
+    <mat-icon>send</mat-icon>
+  </button>
+</div>

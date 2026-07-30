@@ -3,24 +3,34 @@ import { AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { ColorPicker } from '../color-picker/color-picker';
+import { InitialPipe } from '../../pipes/initial-pipe';
 
 @Component({
   selector: 'app-profile',
-  imports: [AsyncPipe, MatIconModule, RouterLink],
+  imports: [AsyncPipe, MatIconModule, RouterLink, ColorPicker, InitialPipe],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class Profile {
-  private authService = inject(AuthService);
+  authService = inject(AuthService);
+  currentUser$ = this.authService.currentUser$;
 
-  currentUser$ = this.authService.getCurrentUser();
+  pickerOpen = false;
 
-  onLogout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        window.location.reload();
-      },
-      error: (err) => console.error('Logout failed', err)
+  chooseColor(color: string) {
+    this.authService.updateAvatarColor(color).subscribe({
+      next: () => { this.pickerOpen = false; },
+      error: (err) => console.error('Failed to save avatar color', err),
     });
+  }
+
+  onLogout() {
+    this.authService.logout().subscribe();
+  }
+
+  togglePicker(event: MouseEvent) {
+    event.stopPropagation();
+    this.pickerOpen = !this.pickerOpen;
   }
 }

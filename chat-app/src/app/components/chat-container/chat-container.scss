@@ -1,8 +1,19 @@
 .chat-space {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     width: 100%;
     margin: 0 auto;
     border-right: 2px solid #2d2d2f;
     height: 100vh;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.input-container {
+    flex-shrink: 0;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
 }

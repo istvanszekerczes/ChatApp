@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from './services/auth';
 
 @Component({
   selector: 'app-root',
@@ -7,6 +8,11 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
-  protected readonly title = signal('chat-app');
+export class App implements OnInit {
+
+  private authService = inject(AuthService);
+
+  ngOnInit() {
+    this.authService.loadCurrentUser().subscribe();
+  }
 }

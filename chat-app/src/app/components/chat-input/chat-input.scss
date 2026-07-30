@@ -1,0 +1,41 @@
+.input-container {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    width: 80%;
+    margin: 0 auto;
+    padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+    background-color: #111112;
+    border: 1px solid #2d2d2f;
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+
+    &:focus-within {
+        border-color: #605e5e;
+    }
+
+    input {
+        flex: 1;
+        min-width: 0;
+        padding: 0.5rem 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        color: white;
+        font-family: inherit;
+        outline: none;
+    }
+
+    button {
+        color: #605e5e;
+        transition: color 0.2s ease;
+
+        &:hover:not(:disabled) {
+            color: white;
+        }
+
+        &:disabled {
+            color: #2d2d2f;
+        }
+    }
+}

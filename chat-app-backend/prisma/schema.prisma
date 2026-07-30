@@ -14,6 +14,8 @@ model User {
   password     String?
   googleId     String?           @unique
   facebookId   String?           @unique
+  avatarColor  String?
+  lastOnline   DateTime?
   createdAt    DateTime          @default(now())
   
   // Relations
@@ -34,6 +36,7 @@ model Chat {
   type         ChatType          @default(DIRECT)
   name         String?           
   password     String?           
+  avatarColor  String?
   createdAt    DateTime          @default(now())
   
   // Relations

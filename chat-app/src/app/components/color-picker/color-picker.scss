@@ -1,0 +1,30 @@
+:host {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    z-index: 100;
+}
+
+.color-picker {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: #19191a;
+    border: 1px solid #2d2d2f;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.color-swatch {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+
+    &.selected {
+        border-color: white;
+    }
+}

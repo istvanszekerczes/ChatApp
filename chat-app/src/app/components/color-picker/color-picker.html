@@ -1,0 +1,11 @@
+<div class="color-picker">
+    @for (color of colors; track color) {
+        <button
+            class="color-swatch"
+            [style.background-color]="color"
+            [class.selected]="color === selected()"
+            (click)="colorChange.emit(color)"
+            aria-label="Set color">
+        </button>
+    }
+</div>
