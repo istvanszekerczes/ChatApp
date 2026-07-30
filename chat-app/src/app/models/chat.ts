@@ -6,6 +6,8 @@ export interface Chat {
   name: string | null;
   avatarColor: string | null;
   createdAt: string;
+  isMember: boolean;
+  participantCount: number;
 }
 
 export interface CreateChatPayload {

@@ -13,6 +13,7 @@ export class ColorPicker {
   private el = inject(ElementRef<HTMLElement>);
 
   readonly selected = input<string | null>(null);
+  readonly flat = input(false);
   readonly colorChange = output<string>();
   readonly close = output<void>();
 

@@ -1,4 +1,4 @@
-<div class="color-picker">
+<div class="color-picker" [class.flat]="flat()">
     @for (color of colors; track color) {
         <button
             class="color-swatch"

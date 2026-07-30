@@ -20,4 +20,10 @@ export class ChatService {
       .post<{ chat: Chat }>(`${this.apiUrl}/chats`, payload, { withCredentials: true })
       .pipe(map(r => r.chat));
   }
+
+  getChats(): Observable<Chat[]> {
+  return this.http
+    .get<{ chats: Chat[] }>(`${this.apiUrl}/chats`, { withCredentials: true })
+    .pipe(map(r => r.chats));
+}
 }   

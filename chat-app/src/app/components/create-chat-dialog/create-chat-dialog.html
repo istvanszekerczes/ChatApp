@@ -1,0 +1,90 @@
+<div class="dialog">
+    <header class="dialog-header">
+        <h2>New group chat</h2>
+        <button class="btn-icon" (click)="close()" aria-label="Close">
+            <mat-icon>close</mat-icon>
+        </button>
+    </header>
+
+    <div class="dialog-body">
+        <div class="form-pane">
+            <div class="avatar-row">
+                <div class="avatar" [style.background-color]="avatarColor || '#3b82f6'">
+                    {{ name | initial }}
+                </div>
+                <input
+                    type="text"
+                    placeholder="Group name"
+                    [(ngModel)]="name"
+                    maxlength="50" />
+            </div>
+
+            <label class="field-label">Colour</label>
+            <app-color-picker
+                [selected]="avatarColor"
+                [flat]="true"
+                (colorChange)="avatarColor = $event" />
+
+            <label class="field-label" for="chat-type">Type</label>
+            <select id="chat-type" [(ngModel)]="type">
+                @for (option of chatTypes; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                }
+            </select>
+
+            @for (option of chatTypes; track option.value) {
+                @if (option.value === type) {
+                    <p class="hint">{{ option.hint }}</p>
+                }
+            }
+
+            @if (type === 'PROTECTED_GROUP') {
+                <label class="field-label" for="chat-password">Password</label>
+                <input
+                    id="chat-password"
+                    type="password"
+                    placeholder="At least 4 characters"
+                    [(ngModel)]="password" />
+            }
+        </div>
+
+        @if (type === 'PRIVATE_GROUP') {
+            <div class="users-pane">
+                <label class="field-label">
+                    Invite users ({{ selectedUserIds().size }})
+                </label>
+                <ul class="user-list">
+                    @for (u of users(); track u.id) {
+                        <li>
+                            <label class="user-item">
+                                <input
+                                    type="checkbox"
+                                    [checked]="isSelected(u.id)"
+                                    (change)="toggleUser(u.id)" />
+                                <span
+                                    class="avatar avatar-sm"
+                                    [style.background-color]="u.avatarColor || '#3b82f6'">
+                                    {{ u.username | initial }}
+                                </span>
+                                <span class="user-name">{{ u.username }}</span>
+                            </label>
+                        </li>
+                    } @empty {
+                        <li class="hint">No other users yet.</li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+
+    @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+    }
+
+    <footer class="dialog-footer">
+        <button class="btn-secondary" (click)="close()">Cancel</button>
+        <button class="btn-primary" [disabled]="submitting()" (click)="submit()">
+            {{ submitting() ? 'Creating…' : 'Create group' }}
+        </button>
+    </footer>
+</div>

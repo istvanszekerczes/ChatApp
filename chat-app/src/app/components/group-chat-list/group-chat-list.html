@@ -1,16 +1,52 @@
 <div class="group-chat-container">
-    <button class="public-chat">
+    <button
+        class="public-chat"
+        [class.active]="activeFilter() === 'PUBLIC_GROUP'"
+        (click)="toggleFilter('PUBLIC_GROUP')">
         <mat-icon>public</mat-icon>
         <span>Public Chats</span>
     </button>
-    <button class="private-chat">
+    <button
+        class="private-chat"
+        [class.active]="activeFilter() === 'PRIVATE_GROUP'"
+        (click)="toggleFilter('PRIVATE_GROUP')">
         <mat-icon>lock_open</mat-icon>
         <span>Private Chats</span>
     </button>
-    <button class="protected-chat">
+    <button
+        class="protected-chat"
+        [class.active]="activeFilter() === 'PROTECTED_GROUP'"
+        (click)="toggleFilter('PROTECTED_GROUP')">
         <mat-icon>lock</mat-icon>
         <span>Protected Chats</span>
     </button>
 </div>
-<p>Groupchats will be listed here</p>
+
+<ul class="chat-list">
+    @for (chat of visibleChats(); track chat.id) {
+        <li>
+            <button class="chat-item">
+                <span
+                    class="avatar"
+                    [style.background-color]="chat.avatarColor || '#3b82f6'">
+                    {{ chat.name | initial }}
+                </span>
+                <span class="chat-meta">
+                    <span class="chat-name">{{ chat.name }}</span>
+                    <span class="chat-sub">
+                        {{ chat.participantCount }} members
+                        @if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
+                            · <mat-icon class="inline-icon">lock</mat-icon>
+                        }
+                    </span>
+                </span>
+            </button>
+        </li>
+    } @empty {
+        <li class="empty">
+            {{ loading() ? 'Loading…' : 'No chats yet' }}
+        </li>
+    }
+</ul>
+
 <div class="divider"></div>

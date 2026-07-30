@@ -4,7 +4,7 @@
   align-items: center;
   margin-top: 1rem;
 
-  .btn-login, .btn-register, .btn-logout  {
+  button {
     display: flex;
     align-items: center;
     width: 90%;
@@ -50,7 +50,14 @@
     align-items: center;
     gap: 0.75rem;
     width: 90%;
-}
+
+    app-color-picker {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      left: 0;
+      z-index: 100;
+    }
+  }
 
   .avatar {
     width: 40px;

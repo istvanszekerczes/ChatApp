@@ -78,4 +78,46 @@ router.post('/', requireAuth, async (req: Request, res: Response): Promise<void>
   }
 });
 
+router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.id;
+
+  try {
+    const chats = await prisma.chat.findMany({
+      where: {
+        OR: [
+          { type: { in: [ChatType.PUBLIC_GROUP, ChatType.PROTECTED_GROUP] } },
+          {
+            type: ChatType.PRIVATE_GROUP,
+            participants: { some: { userId } },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        type: true,
+        name: true,
+        avatarColor: true,
+        createdAt: true,
+        participants: {
+          where: { userId },
+          select: { id: true },
+        },
+        _count: { select: { participants: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json({
+      chats: chats.map(({ participants, _count, ...chat }) => ({
+        ...chat,
+        isMember: participants.length > 0,
+        participantCount: _count.participants,
+      })),
+    });
+  } catch (error) {
+    console.error('Failed to list chats:', error);
+    res.status(500).json({ error: 'Could not load chats.' });
+  }
+});
+
 export default router;
