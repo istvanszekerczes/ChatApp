@@ -1,18 +1,33 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+}
+
+.group-chat-container,
+.search-container,
+.divider {
+    flex-shrink: 0;
+}
+
 .group-chat-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     margin: 1rem auto;
+    width: 100%;
 }
 
 .group-chat-container button {
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    width: 90%;              
+    width: 90%;
     color: white;
     background-color: #19191a;
-    padding: 0.5rem 1rem;     
+    padding: 0.5rem 1rem;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -47,6 +62,9 @@
     flex-direction: column;
     gap: 0.25rem;
     align-items: center;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .chat-list li {
@@ -118,4 +136,94 @@
     font-size: 0.85rem;
     text-align: center;
     padding: 1rem 0;
+}
+
+.group-chat-container button.active {
+    background-color: #2d2d2f;
+    color: white;
+
+    mat-icon {
+        color: #3b82f6;
+    }
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 90%;
+    margin: auto;
+    background-color: #111112;
+    border: 1px solid #2d2d2f;
+    transition: border-color 0.2s ease;
+
+    &:focus-within {
+        border-color: #605e5e;
+    }
+
+    input {
+        flex: 1;
+        min-width: 0;
+        padding: 0.5rem;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: white;
+        font-family: inherit;
+
+        &::placeholder {
+            color: #605e5e;
+        }
+    }
+}
+
+.search-icon {
+    margin: auto;
+    padding: 0.5rem;
+    flex-shrink: 0;
+    color: #605e5e;
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.chat-item.active {
+    background-color: #2d2d2f;
+}
+
+.clear-search {
+    flex-shrink: 0;
+    display: flex;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: #605e5e;
+    cursor: pointer;
+
+    &:hover {
+        color: white;
+    }
+
+    mat-icon {
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+@container (max-width: 120px) {
+    .group-chat-container,
+    .search-container,
+    .chat-meta {
+        display: none;
+    }
+
+    .chat-list li {
+        width: auto;
+    }
+
+    .chat-item {
+        justify-content: center;
+        padding: 0.25rem;
+    }
 }

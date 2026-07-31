@@ -1,18 +1,30 @@
 <div class="container">
-    <div class="sidebar-left">
+    <div class="sidebar-left" [class.expanded]="panels.isOpen('left')">
+        <button class="rail-toggle" (click)="panels.toggle('left')" aria-label="Toggle sidebar">
+            <mat-icon>{{ panels.isOpen('left') ? 'chevron_left' : 'menu' }}</mat-icon>
+        </button>
+
         <div class="sidebar-left-content">
             <app-profile></app-profile>
             <app-create-chat></app-create-chat>
-            <app-group-chat-list></app-group-chat-list>
-            <app-direct-messages></app-direct-messages>
+            <div class="chat-container">
+                <app-group-chat-list></app-group-chat-list>
+                <app-direct-messages></app-direct-messages>
+            </div>
         </div>
     </div>
+
     <div class="main-chat-area">
         <app-chat-area></app-chat-area>
     </div>
-    <div class="sidebar-right">
+
+    <div class="sidebar-right" [class.expanded]="panels.isOpen('right')">
+        <button class="rail-toggle" (click)="panels.toggle('right')" aria-label="Toggle user list">
+            <mat-icon>{{ panels.isOpen('right') ? 'chevron_right' : 'group' }}</mat-icon>
+        </button>
+
         <div class="sidebar-right-content">
-        <app-user-list></app-user-list>
+            <app-user-list></app-user-list>
         </div>
     </div>
 </div>

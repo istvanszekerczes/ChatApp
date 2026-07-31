@@ -1,4 +1,11 @@
 <div class="container">
+    <button
+        class="info-toggle"
+        (click)="panels.toggle('info')"
+        aria-label="Chat options">
+        <mat-icon>more_vert</mat-icon>
+    </button>
+
     <app-chat-container></app-chat-container>
-    <app-chat-info></app-chat-info>
+    <app-chat-info [class.open]="panels.isOpen('info')"></app-chat-info>
 </div>

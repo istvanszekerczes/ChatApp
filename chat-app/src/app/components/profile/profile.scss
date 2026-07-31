@@ -50,6 +50,7 @@
     align-items: center;
     gap: 0.75rem;
     width: 90%;
+  
 
     app-color-picker {
       position: absolute;
@@ -84,4 +85,29 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
+
+@container (max-width: 120px) {
+    .profile-container .btn-logout,
+    .profile-container .username,
+    .profile-container app-color-picker {
+        display: none;
+    }
+
+    .profile-container .btn-login span,
+    .profile-container .btn-register span {
+        display: none;
+    }
+
+    .profile-container .user-row {
+        width: auto;
+        justify-content: center;
+    }
+
+    .profile-container .btn-login,
+    .profile-container .btn-register {
+        width: auto;
+        justify-content: center;
+        padding: 0.5rem;
+    }
 }

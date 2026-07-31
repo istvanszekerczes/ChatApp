@@ -13,14 +13,7 @@ import { Chat } from '../../models/chat';
 export class CreateChat {
   private dialog = inject(MatDialog);
 
-  readonly chatCreated = output<Chat>();
-
   openDialog() {
-    this.dialog
-      .open(CreateChatDialog, { panelClass: 'chat-dialog-panel', autoFocus: false })
-      .afterClosed()
-      .subscribe(chat => {
-        if (chat) this.chatCreated.emit(chat);
-      });
+    this.dialog.open(CreateChatDialog, { panelClass: 'chat-dialog-panel', autoFocus: false });
   }
 }

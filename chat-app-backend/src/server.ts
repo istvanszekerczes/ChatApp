@@ -10,6 +10,8 @@ import { prisma } from './lib/prisma';
 import type { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 import chatRoutes from './routes/chat.routes';
 import userRoutes from './routes/user.routes'
+import { setIo } from './lib/socket';
+import { canAccessChat } from './lib/chat-access';
 
 
 dotenv.config();
@@ -28,6 +30,8 @@ const io = new Server(server, {
     credentials: true
   }
 });
+
+setIo(io);
 
 // Middleware setup
 app.use(cors({
@@ -85,6 +89,9 @@ io.on('connection', (socket) => {
   const userId = (socket.request as ExpressRequest).user!.id;
   console.log(`User connected: ${socket.id} (userId: ${userId})`);
 
+  // Personal room so private-group events can target this user
+  socket.join(`user:${userId}`);
+
   // User joins a specific chat room
   socket.on('join_chat', (chatId: string) => {
     socket.join(chatId);
@@ -92,23 +99,40 @@ io.on('connection', (socket) => {
   });
 
   // Handling incoming real-time messages
+  socket.on('join_chat', async (chatId: string) => {
+    if (!(await canAccessChat(userId, chatId))) {
+      socket.emit('error', { message: 'No access to this chat' });
+      return;
+    }
+    socket.join(chatId);
+    console.log(`Socket ${socket.id} joined room: ${chatId}`);
+  });
+
   socket.on('send_message', async (data: { chatId: string; content: string }) => {
+    const content = (data.content ?? '').trim();
+    if (!content) return;
+
+    if (!(await canAccessChat(userId, data.chatId))) {
+      socket.emit('error', { message: 'No access to this chat' });
+      return;
+    }
+
     try {
-      // Save message to PostgreSQL database using Prisma
       const savedMessage = await prisma.message.create({
         data: {
-          content: data.content,
+          content,
           chatId: data.chatId,
           userId,
         },
-        include: {
-          user: {
-            select: { username: true }
-          }
-        }
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          userId: true,
+          user: { select: { username: true, avatarColor: true } },
+        },
       });
 
-      // Broadcast the message to everyone in that specific chat room
       io.to(data.chatId).emit('receive_message', savedMessage);
     } catch (error) {
       console.error('Failed to save and send message:', error);

@@ -1,3 +1,5 @@
+
+
 .input-container {
     flex-shrink: 0;
     display: flex;
@@ -7,7 +9,6 @@
     padding: 0.25rem 0.25rem 0.25rem 0.75rem;
     background-color: #111112;
     border: 1px solid #2d2d2f;
-    border-radius: 4px;
     transition: border-color 0.2s ease;
 
     &:focus-within {

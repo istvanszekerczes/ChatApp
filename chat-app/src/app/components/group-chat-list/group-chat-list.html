@@ -22,10 +22,24 @@
     </button>
 </div>
 
+<div class="search-container">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+        type="text"
+        placeholder="Search chats..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)" />
+    @if (searchTerm()) {
+        <button class="clear-search" (click)="clearSearch()" aria-label="Clear search">
+            <mat-icon>close</mat-icon>
+        </button>
+    }
+</div>
+
 <ul class="chat-list">
     @for (chat of visibleChats(); track chat.id) {
         <li>
-            <button class="chat-item">
+            <button class="chat-item" [class.active]="activeChat()?.id === chat.id" (click)="selectChat(chat)">
                 <span
                     class="avatar"
                     [style.background-color]="chat.avatarColor || '#3b82f6'">
@@ -44,7 +58,13 @@
         </li>
     } @empty {
         <li class="empty">
-            {{ loading() ? 'Loading…' : 'No chats yet' }}
+            @if (loading()) {
+                Loading…
+            } @else if (searchTerm() || activeFilter()) {
+                No matching chats
+            } @else {
+                No chats yet
+            }
         </li>
     }
 </ul>

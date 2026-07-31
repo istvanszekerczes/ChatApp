@@ -35,3 +35,15 @@
         height: 1rem;
     }
 }
+
+@container (max-width: 120px) {
+    .create-chat-button {
+        width: auto;
+        justify-content: center;
+        padding: 0.5rem;
+
+        span {
+            display: none;
+        }
+    }
+}

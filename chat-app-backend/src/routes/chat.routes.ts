@@ -3,6 +3,8 @@ import { ChatType } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { prisma } from '../lib/prisma';
 import { requireAuth } from '../middleware/require-auth';
+import { getIo } from '../lib/socket';
+import { canAccessChat } from '../lib/chat-access';
 
 const router = Router();
 
@@ -71,7 +73,24 @@ router.post('/', requireAuth, async (req: Request, res: Response): Promise<void>
         id: true, type: true, name: true, avatarColor: true, createdAt: true,
       },
     });
-    res.status(201).json({ chat });
+
+    const payload = {
+      ...chat,
+      participantCount: memberIds.length,
+      isMember: false,
+    };
+
+    console.log('[socket] emitting chat_created', chat.id, type);
+
+    if (type === ChatType.PRIVATE_GROUP) {
+      for (const memberId of memberIds) {
+        getIo().to(`user:${memberId}`).emit('chat_created', { ...payload, isMember: true });
+      }
+    } else {
+      getIo().emit('chat_created', payload);
+    }
+
+    res.status(201).json({ chat: { ...payload, isMember: true } });
   } catch (error) {
     console.error('Failed to create chat:', error);
     res.status(500).json({ error: 'Could not create chat.' });
@@ -117,6 +136,35 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     console.error('Failed to list chats:', error);
     res.status(500).json({ error: 'Could not load chats.' });
+  }
+});
+
+router.get('/:id/messages', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user!.id;
+  const chatId = String(req.params.id);
+
+  if (!(await canAccessChat(userId, chatId))) {
+    res.status(403).json({ error: 'No access to this chat.' });
+    return;
+  }
+
+  try {
+    const messages = await prisma.message.findMany({
+      where: { chatId },
+      orderBy: { createdAt: 'asc' },
+      take: 100,
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        userId: true,
+        user: { select: { username: true, avatarColor: true } },
+      },
+    });
+    res.json({ messages });
+  } catch (error) {
+    console.error('Failed to load messages:', error);
+    res.status(500).json({ error: 'Could not load messages.' });
   }
 });
 

@@ -1,9 +1,47 @@
-<div class="chat-space">
-    <div class="messages-container">
+@if (activeChat(); as chat) {
+    <header class="chat-header">
+        <span class="avatar" [style.background-color]="chat.avatarColor || '#3b82f6'">
+            {{ chat.name | initial }}
+        </span>
+        <span class="chat-title">{{ chat.name }}</span>
+    </header>
 
+    <div class="messages-scroll">
+        @if (loading()) {
+            <p class="placeholder">Loading messages…</p>
+        } @else {
+            @for (msg of messages(); track msg.id) {
+                <div class="message" [class.own]="isOwn(msg.userId)">
+                    <span
+                        class="avatar avatar-sm"
+                        [style.background-color]="msg.user.avatarColor || '#3b82f6'">
+                        {{ msg.user.username | initial }}
+                    </span>
+                    <div class="bubble">
+                        <span class="sender">{{ msg.user.username }}</span>
+                        <span class="content">{{ msg.content }}</span>
+                    </div>
+                </div>
+            } @empty {
+                <p class="placeholder">No messages yet. Say something.</p>
+            }
+        }
+        <div #scrollAnchor></div>
     </div>
-    <div class="divider"></div>
+
     <div class="input-container">
-        <app-chat-input></app-chat-input>
+        <input
+            type="text"
+            placeholder="Type a message..."
+            [(ngModel)]="messageText"
+            (keyup.enter)="send()" />
+        <button
+            [disabled]="!messageText.trim()"
+            (click)="send()"
+            aria-label="Send message">
+            <mat-icon>send</mat-icon>
+        </button>
     </div>
-</div>
+} @else {
+    <p class="placeholder centered">Pick a chat to start messaging</p>
+}
