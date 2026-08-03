@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from './services/auth';
 import { SocketService } from './services/socket';
 import { ChatService } from './services/chat';
+import { UserService } from './services/user';
 
 @Component({
   selector: 'app-root',
@@ -17,16 +18,21 @@ export class App implements OnInit {
   private chatService = inject(ChatService);
 
   private currentUser = toSignal(this.authService.currentUser$);
+  private userService = inject(UserService);
 
   constructor() {
     effect(() => {
       if (this.currentUser()) {
         this.socketService.connect();
         this.chatService.listenForNewChats();
+        this.chatService.listenForUserUpdates();
         this.chatService.loadChats();
+        this.userService.listenForPresence();
+        this.userService.loadUsers();
       } else {
         this.socketService.disconnect();
         this.chatService.clearChats();
+        this.userService.clearUsers();
       }
     });
   }

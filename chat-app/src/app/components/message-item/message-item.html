@@ -1,1 +1,13 @@
-<p>message-item works!</p>
+<span class="avatar" [style.background-color]="avatarColor()">
+    {{ message().user.username | initial }}
+</span>
+
+<div class="bubble">
+    @if (!isOwn()) {
+        <span class="sender">{{ message().user.username }}</span>
+    }
+    <span class="content">{{ message().content }}</span>
+    <span class="timestamp" [title]="message().createdAt">
+        {{ message().createdAt | messageTime }}
+    </span>
+</div>

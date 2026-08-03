@@ -1,0 +1,48 @@
+<div class="dialog">
+    <header class="dialog-header">
+        <h2>Add members</h2>
+        <button class="btn-icon" (click)="close()" aria-label="Close">
+            <mat-icon>close</mat-icon>
+        </button>
+    </header>
+
+    <div class="dialog-body">
+        <label class="field-label">
+            Select users ({{ selectedIds().size }})
+        </label>
+        <ul class="user-list">
+            @for (u of available(); track u.id) {
+                <li>
+                    <label class="user-item">
+                        <input
+                            type="checkbox"
+                            [checked]="isSelected(u.id)"
+                            (change)="toggle(u.id)" />
+                        <span
+                            class="avatar avatar-sm"
+                            [style.background-color]="u.avatarColor || '#3b82f6'">
+                            {{ u.username | initial }}
+                        </span>
+                        <span class="user-name">{{ u.username }}</span>
+                    </label>
+                </li>
+            } @empty {
+                <li class="hint">Everyone is already in this group.</li>
+            }
+        </ul>
+    </div>
+
+    @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+    }
+
+    <footer class="dialog-footer">
+        <button class="btn-secondary" (click)="close()">Cancel</button>
+        <button
+            class="btn-primary"
+            [disabled]="submitting() || !selectedIds().size"
+            (click)="submit()">
+            {{ submitting() ? 'Adding…' : 'Add' }}
+        </button>
+    </footer>
+</div>

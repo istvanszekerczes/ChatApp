@@ -1,0 +1,15 @@
+<div class="button-container">
+    <button
+        [class.active]="activeTab() === 'groups'"
+        (click)="tabChange.emit('groups')">
+        <mat-icon>group</mat-icon>
+        <span>Group Chats</span>
+    </button>
+    <button
+        [class.active]="activeTab() === 'direct'"
+        (click)="tabChange.emit('direct')">
+        <mat-icon>person</mat-icon>
+        <span>Direct Messages</span>
+    </button>
+</div>
+<div class="divider"></div>

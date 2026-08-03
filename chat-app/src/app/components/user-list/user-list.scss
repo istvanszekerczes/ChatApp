@@ -1,6 +1,58 @@
-p {
-    display:flex;
-    justify-content: center;
-    color: white;
-    margin: 1rem auto;
+:host {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+}
+
+.user-header {
+    flex-shrink: 0;
+    width: 90%;
+    margin: 1rem auto 0;
+    font-weight: 600;
+}
+
+.user-list {
+    list-style: none;
+    margin: 0.5rem 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.user-list li {
+    width: 90%;
+}
+
+.section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    margin-top: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.empty {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 1rem 0;
+}
+
+@container (max-width: 120px) {
+    .user-header,
+    .section-label {
+        display: none;
+    }
+
+    .user-list li {
+        width: auto;
+    }
 }

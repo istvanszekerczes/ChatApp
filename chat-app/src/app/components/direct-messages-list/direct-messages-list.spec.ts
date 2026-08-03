@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Home } from './home';
-import { signal } from '@angular/core';
+import { DirectMessagesList } from './direct-messages-list';
 
-describe('Home', () => {
-  let component: Home;
-  let fixture: ComponentFixture<Home>;
-  
+describe('DirectMessagesList', () => {
+  let component: DirectMessagesList;
+  let fixture: ComponentFixture<DirectMessagesList>;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Home],
+      imports: [DirectMessagesList],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Home);
+    fixture = TestBed.createComponent(DirectMessagesList);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

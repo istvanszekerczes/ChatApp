@@ -6,6 +6,7 @@ export interface Chat {
   name: string | null;
   avatarColor: string | null;
   createdAt: string;
+  creatorId: string | null;
   isMember: boolean;
   participantCount: number;
 }

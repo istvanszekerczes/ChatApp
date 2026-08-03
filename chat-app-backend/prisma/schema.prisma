@@ -21,6 +21,7 @@ model User {
   // Relations
   messages     Message[]
   participants ChatParticipant[]
+  createdChats Chat[]            @relation("CreatedChats")
 }
 
 // Enum for the 4 types of chats
@@ -38,6 +39,9 @@ model Chat {
   password     String?           
   avatarColor  String?
   createdAt    DateTime          @default(now())
+  
+  creatorId    String?
+  creator      User?             @relation("CreatedChats", fields: [creatorId], references: [id], onDelete: SetNull)
   
   // Relations
   messages     Message[]

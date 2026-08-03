@@ -1,30 +1,34 @@
 <div class="container">
-    <div class="sidebar-left" [class.expanded]="panels.isOpen('left')">
-        <button class="rail-toggle" (click)="panels.toggle('left')" aria-label="Toggle sidebar">
-            <mat-icon>{{ panels.isOpen('left') ? 'chevron_left' : 'menu' }}</mat-icon>
-        </button>
+  <div class="sidebar-left" [class.expanded]="panels.isOpen('left')">
+    <button class="rail-toggle" (click)="panels.toggle('left')" aria-label="Toggle sidebar">
+      <mat-icon>{{ panels.isOpen('left') ? 'chevron_left' : 'menu' }}</mat-icon>
+    </button>
 
-        <div class="sidebar-left-content">
-            <app-profile></app-profile>
-            <app-create-chat></app-create-chat>
-            <div class="chat-container">
-                <app-group-chat-list></app-group-chat-list>
-                <app-direct-messages></app-direct-messages>
-            </div>
-        </div>
+    <div class="sidebar-left-content">
+      <app-profile></app-profile>
+      <app-chat-type-picker [activeTab]="activeTab()" (tabChange)="activeTab.set($event)" />
+      <app-create-chat></app-create-chat>
+      <div class="chat-container">
+        @if (activeTab() === 'groups') {
+          <app-group-chat-list></app-group-chat-list>
+        } @else {
+          <app-direct-messages-list></app-direct-messages-list>
+        }
+      </div>
     </div>
+  </div>
 
-    <div class="main-chat-area">
-        <app-chat-area></app-chat-area>
+  <div class="main-chat-area">
+    <app-chat-area></app-chat-area>
+  </div>
+
+  <div class="sidebar-right" [class.expanded]="panels.isOpen('right')">
+    <button class="rail-toggle" (click)="panels.toggle('right')" aria-label="Toggle user list">
+      <mat-icon>{{ panels.isOpen('right') ? 'chevron_right' : 'group' }}</mat-icon>
+    </button>
+
+    <div class="sidebar-right-content">
+      <app-user-list></app-user-list>
     </div>
-
-    <div class="sidebar-right" [class.expanded]="panels.isOpen('right')">
-        <button class="rail-toggle" (click)="panels.toggle('right')" aria-label="Toggle user list">
-            <mat-icon>{{ panels.isOpen('right') ? 'chevron_right' : 'group' }}</mat-icon>
-        </button>
-
-        <div class="sidebar-right-content">
-            <app-user-list></app-user-list>
-        </div>
-    </div>
+  </div>
 </div>

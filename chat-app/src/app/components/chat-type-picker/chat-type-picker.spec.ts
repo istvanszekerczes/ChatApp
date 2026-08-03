@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Home } from './home';
-import { signal } from '@angular/core';
+import { ChatTypePicker } from './chat-type-picker';
 
-describe('Home', () => {
-  let component: Home;
-  let fixture: ComponentFixture<Home>;
-  
+describe('ChatTypePicker', () => {
+  let component: ChatTypePicker;
+  let fixture: ComponentFixture<ChatTypePicker>;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Home],
+      imports: [ChatTypePicker],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Home);
+    fixture = TestBed.createComponent(ChatTypePicker);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -42,11 +42,9 @@ router.post(
       type === ChatType.PROTECTED_GROUP &&
       (!password || password.length < 4)
     ) {
-      res
-        .status(400)
-        .json({
-          error: "Protected groups need a password of at least 4 characters.",
-        });
+      res.status(400).json({
+        error: "Protected groups need a password of at least 4 characters.",
+      });
       return;
     }
 
@@ -60,11 +58,9 @@ router.post(
         return;
       }
       if (participantIds.length > MAX_PARTICIPANTS) {
-        res
-          .status(400)
-          .json({
-            error: `Cannot add more than ${MAX_PARTICIPANTS} participants.`,
-          });
+        res.status(400).json({
+          error: `Cannot add more than ${MAX_PARTICIPANTS} participants.`,
+        });
         return;
       }
       const found = await prisma.user.findMany({
@@ -79,6 +75,7 @@ router.post(
           type,
           name: name.trim(),
           avatarColor: avatarColor ?? null,
+          creatorId,
           password:
             type === ChatType.PROTECTED_GROUP
               ? await bcrypt.hash(password, 10)
@@ -93,6 +90,7 @@ router.post(
           name: true,
           avatarColor: true,
           createdAt: true,
+          creatorId: true,
         },
       });
 
@@ -143,6 +141,7 @@ router.get(
           id: true,
           type: true,
           name: true,
+          creatorId: true,
           avatarColor: true,
           createdAt: true,
           participants: {
@@ -243,5 +242,150 @@ router.post(
     res.json({ joined: true });
   },
 );
+
+router.get('/:id/participants', requireAuth, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const userId = req.user!.id;
+  const chatId = req.params.id;
+
+  if (!(await canAccessChat(userId, chatId))) {
+    res.status(403).json({ error: 'No access to this chat.' });
+    return;
+  }
+
+  try {
+    const participants = await prisma.chatParticipant.findMany({
+      where: { chatId },
+      select: {
+        user: { select: { id: true, username: true, avatarColor: true } },
+      },
+      orderBy: { user: { username: 'asc' } },
+    });
+
+    res.json({ participants: participants.map(p => p.user) });
+  } catch (error) {
+    console.error('Failed to load participants:', error);
+    res.status(500).json({ error: 'Could not load participants.' });
+  }
+});
+
+router.post('/:id/participants', requireAuth, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const userId = req.user!.id;
+  const chatId = req.params.id;
+  const { userIds } = req.body;
+
+  const chat = await prisma.chat.findUnique({
+    where: { id: chatId },
+    select: { creatorId: true },
+  });
+
+  if (!chat) {
+    res.status(404).json({ error: 'Chat not found.' });
+    return;
+  }
+  if (chat.creatorId !== userId) {
+    res.status(403).json({ error: 'Only the group owner can add members.' });
+    return;
+  }
+  if (!Array.isArray(userIds) || userIds.length === 0) {
+    res.status(400).json({ error: 'No users provided.' });
+    return;
+  }
+
+  try {
+    const found = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, username: true, avatarColor: true },
+    });
+
+    await prisma.chatParticipant.createMany({
+      data: found.map(u => ({ userId: u.id, chatId })),
+      skipDuplicates: true,
+    });
+
+    for (const u of found) {
+      getIo().to(`user:${u.id}`).emit('added_to_chat', { chatId });
+    }
+    getIo().to(chatId).emit('participants_changed', { chatId });
+
+    res.json({ added: found });
+  } catch (error) {
+    console.error('Failed to add participants:', error);
+    res.status(500).json({ error: 'Could not add members.' });
+  }
+});
+
+router.delete('/:id/participants/:userId', requireAuth, async (req: Request<{ id: string; userId: string }>, res: Response): Promise<void> => {
+  const requesterId = req.user!.id;
+  const chatId = req.params.id;
+  const targetId = req.params.userId;
+
+  const chat = await prisma.chat.findUnique({
+    where: { id: chatId },
+    select: { creatorId: true },
+  });
+
+  if (!chat) {
+    res.status(404).json({ error: 'Chat not found.' });
+    return;
+  }
+
+  const isSelf = requesterId === targetId;
+  const isOwner = chat.creatorId === requesterId;
+
+  if (!isSelf && !isOwner) {
+    res.status(403).json({ error: 'Only the group owner can remove members.' });
+    return;
+  }
+  if (isSelf && isOwner) {
+    res.status(400).json({ error: 'The owner cannot leave. Delete the group instead.' });
+    return;
+  }
+  if (!isSelf && targetId === chat.creatorId) {
+    res.status(400).json({ error: 'The owner cannot be removed.' });
+    return;
+  }
+
+  try {
+    await prisma.chatParticipant.deleteMany({
+      where: { chatId, userId: targetId },
+    });
+
+    getIo().to(`user:${targetId}`).emit('removed_from_chat', { chatId });
+    getIo().to(chatId).emit('participants_changed', { chatId });
+
+    res.json({ removed: true });
+  } catch (error) {
+    console.error('Failed to remove participant:', error);
+    res.status(500).json({ error: 'Could not remove member.' });
+  }
+});
+
+router.delete('/:id', requireAuth, async (req: Request<{ id: string }>, res: Response): Promise<void> => {
+  const userId = req.user!.id;
+  const chatId = req.params.id;
+
+  const chat = await prisma.chat.findUnique({
+    where: { id: chatId },
+    select: { creatorId: true },
+  });
+
+  if (!chat) {
+    res.status(404).json({ error: 'Chat not found.' });
+    return;
+  }
+  if (chat.creatorId !== userId) {
+    res.status(403).json({ error: 'Only the group owner can delete this chat.' });
+    return;
+  }
+
+  try {
+    await prisma.chat.delete({ where: { id: chatId } });
+    getIo().emit('chat_deleted', { chatId });
+    res.json({ deleted: true });
+  } catch (error) {
+    console.error('Failed to delete chat:', error);
+    res.status(500).json({ error: 'Could not delete chat.' });
+  }
+});
 
 export default router;

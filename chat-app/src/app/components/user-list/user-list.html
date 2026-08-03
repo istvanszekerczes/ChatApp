@@ -1,1 +1,27 @@
-<p>Users</p>
+<ul class="user-list">
+    @if (loading()) {
+        <li class="empty">Loading…</li>
+    } @else {
+        @if (onlineUsers().length) {
+            <li class="section-label">Online — {{ onlineUsers().length }}</li>
+            @for (user of onlineUsers(); track user.id) {
+                <li>
+                    <app-user-item [user]="user" (message)="onMessage($event)" />
+                </li>
+            }
+        }
+
+        @if (offlineUsers().length) {
+            <li class="section-label">Offline — {{ offlineUsers().length }}</li>
+            @for (user of offlineUsers(); track user.id) {
+                <li>
+                    <app-user-item [user]="user" (message)="onMessage($event)" />
+                </li>
+            }
+        }
+
+        @if (!onlineUsers().length && !offlineUsers().length) {
+            <li class="empty">No other users yet</li>
+        }
+    }
+</ul>

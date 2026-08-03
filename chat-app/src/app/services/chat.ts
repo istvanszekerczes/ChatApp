@@ -15,6 +15,7 @@ export class ChatService {
   private apiUrl = environment.apiUrl;
   readonly chats = signal<Chat[]>([]);
   readonly loading = signal(false);
+  private userListenerBound = false;
 
   private listening = false;
 
@@ -23,6 +24,11 @@ export class ChatService {
   readonly messagesLoading = signal(false);
 
   private messageListenerBound = false;
+  readonly participants = signal<User[]>([]);
+  readonly participantsLoading = signal(false);
+
+  private chatEventsBound = false;
+
 
   selectChat(chat: Chat) {
     if (this.activeChat()?.id === chat.id) return;
@@ -34,9 +40,13 @@ export class ChatService {
 
     this.activeChat.set(chat);
     this.messages.set([]);
+    this.participants.set([]);
     this.listenForMessages();
     this.socketService.emit('join_chat', chat.id);
     this.loadMessages(chat.id);
+    if (chat.type !== 'PUBLIC_GROUP') {
+      this.loadParticipants(chat.id);
+    }
   }
 
   sendMessage(content: string) {
@@ -89,6 +99,25 @@ export class ChatService {
     });
   }
 
+   listenForUserUpdates() {
+    if (this.userListenerBound) return;
+    this.userListenerBound = true;
+
+    this.socketService
+      .on<{ id: string; username: string; avatarColor: string | null }>('user_updated')
+      .subscribe(user => {
+        this.zone.run(() => {
+          this.messages.update(current =>
+            current.map(msg =>
+              msg.userId === user.id
+                ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
+                : msg
+            )
+          );
+        });
+      });
+  }
+
   loadChats() {
     this.loading.set(true);
     this.http
@@ -131,5 +160,75 @@ export class ChatService {
     this.chats.update(current =>
       current.some(c => c.id === chat.id) ? current : [chat, ...current]
     );
+  }
+
+  loadParticipants(chatId: string) {
+    this.participantsLoading.set(true);
+    this.http
+      .get<{ participants: User[] }>(`${this.apiUrl}/chats/${chatId}/participants`, {
+        withCredentials: true,
+      })
+      .pipe(map(r => r.participants))
+      .subscribe({
+        next: participants => {
+          if (this.activeChat()?.id !== chatId) return;
+          this.participants.set(participants);
+          this.participantsLoading.set(false);
+        },
+        error: () => this.participantsLoading.set(false),
+      });
+  }
+
+  addParticipants(chatId: string, userIds: string[]): Observable<User[]> {
+    return this.http
+      .post<{ added: User[] }>(`${this.apiUrl}/chats/${chatId}/participants`,
+        { userIds }, { withCredentials: true })
+      .pipe(map(r => r.added));
+  }
+
+  removeParticipant(chatId: string, userId: string): Observable<unknown> {
+    return this.http.delete(
+      `${this.apiUrl}/chats/${chatId}/participants/${userId}`,
+      { withCredentials: true }
+    );
+  }
+
+  deleteChat(chatId: string): Observable<unknown> {
+    return this.http.delete(`${this.apiUrl}/chats/${chatId}`, { withCredentials: true });
+  }
+
+  listenForChatEvents() {
+    if (this.chatEventsBound) return;
+    this.chatEventsBound = true;
+
+    this.socketService.on<{ chatId: string }>('participants_changed').subscribe(({ chatId }) => {
+      this.zone.run(() => {
+        if (this.activeChat()?.id === chatId) this.loadParticipants(chatId);
+      });
+    });
+
+    this.socketService.on<{ chatId: string }>('chat_deleted').subscribe(({ chatId }) => {
+      this.zone.run(() => {
+        this.chats.update(c => c.filter(chat => chat.id !== chatId));
+        if (this.activeChat()?.id === chatId) this.closeActiveChat();
+      });
+    });
+
+    this.socketService.on<{ chatId: string }>('removed_from_chat').subscribe(({ chatId }) => {
+      this.zone.run(() => {
+        this.chats.update(c => c.filter(chat => chat.id !== chatId));
+        if (this.activeChat()?.id === chatId) this.closeActiveChat();
+      });
+    });
+
+    this.socketService.on<{ chatId: string }>('added_to_chat').subscribe(() => {
+      this.zone.run(() => this.loadChats());
+    });
+  }
+
+  closeActiveChat() {
+    this.activeChat.set(null);
+    this.messages.set([]);
+    this.participants.set([]);
   }
 }

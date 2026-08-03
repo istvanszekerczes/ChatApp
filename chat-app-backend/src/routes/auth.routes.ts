@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import { prisma } from '../lib/prisma';
 import { isValidAvatarColor } from '../lib/avatar-colors';
 import { requireAuth } from '../middleware/require-auth';
+import { getIo } from '../lib/socket';
 
 const router = Router();
 
@@ -77,6 +78,12 @@ router.patch('/me', requireAuth, async (req: Request, res: Response): Promise<vo
       where: { id: req.user!.id },
       data: { avatarColor },
     });
+    getIo().emit('user_updated', {
+      id: updated.id,
+      username: updated.username,
+      avatarColor: updated.avatarColor,
+    });
+
     res.json({ user: toSafeUser(updated) });
   } catch (error) {
     console.error('Failed to update avatar color:', error);

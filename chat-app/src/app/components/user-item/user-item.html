@@ -1,1 +1,24 @@
-<p>user-item works!</p>
+<span class="avatar" [style.background-color]="avatarColor()">
+    {{ user().username | initial }}
+    <span class="status-dot" [class.online]="user().online"></span>
+</span>
+
+<span class="user-meta">
+    <span class="user-name">{{ user().username }}</span>
+    @if (!user().online) {
+        <span class="user-sub">
+            @if (user().lastOnline) {
+                {{ user().lastOnline! | messageTime }}
+            } @else {
+                Offline
+            }
+        </span>
+    }
+</span>
+
+<button
+    class="btn-message"
+    (click)="message.emit(user())"
+    [attr.aria-label]="'Message ' + user().username">
+    <mat-icon>mail</mat-icon>
+</button>

@@ -27,7 +27,7 @@ app-chat-info {
     display: block;
     min-height: 0;
     overflow-y: auto;
-    background-color: var(--color-surface-deep);
+    background-color: var(--color-surface);
     border-left: 1px solid var(--color-border);
 }
 
@@ -41,7 +41,7 @@ app-chat-info {
     background-color: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: 4px;
-    color: #888780;
+    color: var(--color-text-muted);
     cursor: pointer;
     transition: color 0.2s ease;
 

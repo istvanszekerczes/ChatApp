@@ -139,12 +139,8 @@
 }
 
 .group-chat-container button.active {
-    background-color: var(--color-border);
+    background-color: var(--color-border-hover);
     color: white;
-
-    mat-icon {
-        color: #3b82f6;
-    }
 }
 
 .search-container {

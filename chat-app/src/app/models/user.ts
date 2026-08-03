@@ -7,4 +7,5 @@ export interface User {
   createdAt: string;
   googleId: string | null;
   facebookId: string | null;
+  online?: boolean;
 }
