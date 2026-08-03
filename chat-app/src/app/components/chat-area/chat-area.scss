@@ -27,8 +27,8 @@ app-chat-info {
     display: block;
     min-height: 0;
     overflow-y: auto;
-    background-color: #111112;
-    border-left: 1px solid #2d2d2f;
+    background-color: var(--color-surface-deep);
+    border-left: 1px solid var(--color-border);
 }
 
 .info-toggle {
@@ -38,8 +38,8 @@ app-chat-info {
     right: 0.75rem;
     z-index: 20;
     padding: 0.4rem;
-    background-color: #19191a;
-    border: 1px solid #2d2d2f;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
     border-radius: 4px;
     color: #888780;
     cursor: pointer;

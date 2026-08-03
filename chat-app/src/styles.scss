@@ -48,6 +48,16 @@ button {
     scrollbar-color: #2d2d2f transparent;
 }
 
+:root {
+  --color-bg: #363636;
+  --color-surface: #19191a;
+  --color-surface-deep: #111112;
+  --color-border: #2d2d2f;
+  --color-border-hover: #605e5e;
+  --color-text-muted: #9ca3af;
+  --color-accent: #3b82f6;
+}
+
 *::-webkit-scrollbar {
     width: 8px;
     height: 8px;

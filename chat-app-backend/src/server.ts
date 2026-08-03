@@ -12,6 +12,7 @@ import chatRoutes from './routes/chat.routes';
 import userRoutes from './routes/user.routes'
 import { setIo } from './lib/socket';
 import { canAccessChat } from './lib/chat-access';
+import type { ErrorRequestHandler } from 'express';
 
 
 dotenv.config();
@@ -92,11 +93,6 @@ io.on('connection', (socket) => {
   // Personal room so private-group events can target this user
   socket.join(`user:${userId}`);
 
-  // User joins a specific chat room
-  socket.on('join_chat', (chatId: string) => {
-    socket.join(chatId);
-    console.log(`Socket ${socket.id} joined room: ${chatId}`);
-  });
 
   // Handling incoming real-time messages
   socket.on('join_chat', async (chatId: string) => {
@@ -106,6 +102,10 @@ io.on('connection', (socket) => {
     }
     socket.join(chatId);
     console.log(`Socket ${socket.id} joined room: ${chatId}`);
+  });
+
+  socket.on('leave_chat', (chatId: string) => {
+    socket.leave(chatId);
   });
 
   socket.on('send_message', async (data: { chatId: string; content: string }) => {
@@ -126,6 +126,7 @@ io.on('connection', (socket) => {
         },
         select: {
           id: true,
+          chatId: true,
           content: true,
           createdAt: true,
           userId: true,
@@ -152,6 +153,17 @@ io.on('connection', (socket) => {
     }
   });
 });
+
+
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+  res.status(500).json({ error: 'Internal server error.' });
+};
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

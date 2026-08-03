@@ -1,9 +1,7 @@
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 // Configure Local Strategy (Username & Password)
 passport.use(
@@ -21,7 +19,8 @@ passport.use(
           return done(null, false, { message: 'Invalid email or password.' });
         }
 
-        return done(null, user);
+        const { password: _password, ...safeUser } = user;
+        return done(null, safeUser);
       } catch (error) {
         return done(error);
       }
@@ -37,7 +36,13 @@ passport.serializeUser((user: any, done) => {
 // Retrieve user from database using the session id
 passport.deserializeUser(async (id: string, done) => {
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true, email: true, username: true, avatarColor: true,
+        lastOnline: true, createdAt: true, googleId: true, facebookId: true,
+      },
+    });
     done(null, user);
   } catch (error) {
     done(error);

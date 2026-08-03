@@ -1,6 +1,7 @@
 import { Service } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
 
 type Handler = (data: unknown) => void;
 
@@ -12,7 +13,7 @@ export class SocketService {
   connect() {
     if (this.socket) return;
 
-    this.socket = io('http://localhost:3000', { withCredentials: true });
+    this.socket = io(environment.socketUrl, { withCredentials: true });
 
     this.socket.on('connect', () => {
       console.log('[socket] connected', this.socket?.id);

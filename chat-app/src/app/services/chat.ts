@@ -5,14 +5,14 @@ import { Chat, CreateChatPayload } from '../models/chat';
 import { User } from '../models/user';
 import { SocketService } from './socket';
 import { Message } from '../models/message';
+import { environment } from '../environments/environment';
 
 @Service()
 export class ChatService {
   private http = inject(HttpClient);
   private socketService = inject(SocketService);
   private zone = inject(NgZone);
-  private apiUrl = 'http://localhost:3000/api';
-
+  private apiUrl = environment.apiUrl;
   readonly chats = signal<Chat[]>([]);
   readonly loading = signal(false);
 
@@ -26,6 +26,11 @@ export class ChatService {
 
   selectChat(chat: Chat) {
     if (this.activeChat()?.id === chat.id) return;
+
+    const previousChatId = this.activeChat()?.id;
+    if (previousChatId) {
+      this.socketService.emit('leave_chat', previousChatId);
+    }
 
     this.activeChat.set(chat);
     this.messages.set([]);
@@ -64,7 +69,8 @@ export class ChatService {
     if (this.messageListenerBound) return;
     this.messageListenerBound = true;
 
-    this.socketService.on<Message & { chatId?: string }>('receive_message').subscribe(msg => {
+    this.socketService.on<Message>('receive_message').subscribe(msg => {
+      if (msg.chatId !== this.activeChat()?.id) return;
       this.zone.run(() => {
         this.messages.update(current =>
           current.some(m => m.id === msg.id) ? current : [...current, msg]

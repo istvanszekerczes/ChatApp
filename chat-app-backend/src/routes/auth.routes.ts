@@ -3,8 +3,15 @@ import passport from 'passport';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { prisma } from '../lib/prisma';
+import { isValidAvatarColor } from '../lib/avatar-colors';
+import { requireAuth } from '../middleware/require-auth';
 
 const router = Router();
+
+function toSafeUser(user: Express.User) {
+  const { password, ...safeUser } = user as { password?: string; [key: string]: unknown };
+  return safeUser;
+}
 
 // Register Route
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -41,11 +48,6 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 });
 
 // Login Route
-function toSafeUser(user: Express.User) {
-  const { password, ...safeUser } = user as { password?: string; [key: string]: unknown };
-  return safeUser;
-}
-
 router.post('/login', passport.authenticate('local'), async (req: Request, res: Response) => {
   try {
     await prisma.user.update({
@@ -58,39 +60,14 @@ router.post('/login', passport.authenticate('local'), async (req: Request, res: 
   res.json({ message: 'Logged in successfully', user: toSafeUser(req.user!) });
 });
 
-router.get('/me', (req: Request, res: Response): void => {
-  if (req.isAuthenticated()) {
-    res.json({ user: toSafeUser(req.user!) });
-  } else {
-    res.status(401).json({ error: 'Not authenticated' });
-  }
+router.get('/me', requireAuth, (req: Request, res: Response): void => {
+  res.json({ user: toSafeUser(req.user!) });
 });
 
-// Logout Route
-router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
-  req.logout((err) => {
-    if (err) return next(err);
-    req.session.destroy(() => {
-      res.clearCookie('connect.sid');
-      res.json({ message: 'Logged out successfully' });
-    });
-  });
-});
-
-//Validating avatar color string
-const ALLOWED_AVATAR_COLORS = [
-  '#3b82f6', '#ef4444', '#22c55e', '#a855f7', '#f59e0b', '#ec4899',
-];
-
-router.patch('/me', async (req: Request, res: Response): Promise<void> => {
-  if (!req.isAuthenticated()) {
-    res.status(401).json({ error: 'Not authenticated' });
-    return;
-  }
-
+router.patch('/me', requireAuth, async (req: Request, res: Response): Promise<void> => {
   const { avatarColor } = req.body;
 
-  if (!ALLOWED_AVATAR_COLORS.includes(avatarColor)) {
+  if (!isValidAvatarColor(avatarColor)) {
     res.status(400).json({ error: 'Invalid avatar color.' });
     return;
   }
@@ -107,6 +84,15 @@ router.patch('/me', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-
+// Logout Route
+router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
+  req.logout((err) => {
+    if (err) return next(err);
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+});
 
 export default router;

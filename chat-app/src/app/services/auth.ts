@@ -2,6 +2,7 @@ import { Service, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, map, catchError, of, tap } from 'rxjs';
 import { User } from '../models/user';
+import { environment } from '../environments/environment';
 
 interface RegisterResponse {
   message: string;
@@ -16,7 +17,8 @@ interface LoginResponse {
 @Service()
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
+
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   readonly currentUser$ = this.currentUserSubject.asObservable();

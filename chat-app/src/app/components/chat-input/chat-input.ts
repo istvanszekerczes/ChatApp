@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { ChatService } from '../../services/chat';
 
 @Component({
   selector: 'app-chat-input',
@@ -10,13 +11,15 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrl: './chat-input.scss',
 })
 export class ChatInput {
+  private chatService = inject(ChatService);
+
   messageText = '';
 
   sendMessage() {
     const content = this.messageText.trim();
     if (!content) return;
 
-    // emit over socket here
+    this.chatService.sendMessage(content);
     this.messageText = '';
   }
 }

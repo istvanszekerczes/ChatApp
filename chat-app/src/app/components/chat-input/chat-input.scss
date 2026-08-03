@@ -7,12 +7,12 @@
     width: 80%;
     margin: 0 auto;
     padding: 0.25rem 0.25rem 0.25rem 0.75rem;
-    background-color: #111112;
-    border: 1px solid #2d2d2f;
+    background-color: var(--color-surface-deep);
+    border: 1px solid var(--color-border);
     transition: border-color 0.2s ease;
 
     &:focus-within {
-        border-color: #605e5e;
+        border-color: var(--color-border-hover);
     }
 
     input {
@@ -28,7 +28,7 @@
     }
 
     button {
-        color: #605e5e;
+        color: var(--color-border-hover);
         transition: color 0.2s ease;
 
         &:hover:not(:disabled) {
@@ -36,7 +36,7 @@
         }
 
         &:disabled {
-            color: #2d2d2f;
+            color: var(--color-border);
         }
     }
 }

@@ -26,7 +26,7 @@
     align-items: center;
     width: 90%;
     color: white;
-    background-color: #19191a;
+    background-color: var(--color-surface);
     padding: 0.5rem 1rem;
     border: none;
     border-radius: 4px;
@@ -35,7 +35,7 @@
     gap: 0.5rem;
 
     &:hover {
-        background-color: #605e5e;
+        background-color: var(--color-border-hover);
     }
 
     mat-icon {
@@ -46,7 +46,7 @@
 }
 
 .divider {
-        border-top: 1px solid #2d2d2f;
+        border-top: 1px solid var(--color-border);
         margin:auto;
         width: 90%;
         height: 1px;
@@ -87,7 +87,7 @@
     transition: background-color 0.2s ease;
 
     &:hover {
-        background-color: #19191a;
+        background-color: var(--color-surface);
     }
 }
 
@@ -139,7 +139,7 @@
 }
 
 .group-chat-container button.active {
-    background-color: #2d2d2f;
+    background-color: var(--color-border);
     color: white;
 
     mat-icon {
@@ -153,12 +153,12 @@
     gap: 0.5rem;
     width: 90%;
     margin: auto;
-    background-color: #111112;
-    border: 1px solid #2d2d2f;
+    background-color: var(--color-surface-deep);
+    border: 1px solid var(--color-border);
     transition: border-color 0.2s ease;
 
     &:focus-within {
-        border-color: #605e5e;
+        border-color: var(--color-border-hover);
     }
 
     input {
@@ -172,7 +172,7 @@
         font-family: inherit;
 
         &::placeholder {
-            color: #605e5e;
+            color: var(--color-border-hover);
         }
     }
 }
@@ -181,14 +181,14 @@
     margin: auto;
     padding: 0.5rem;
     flex-shrink: 0;
-    color: #605e5e;
+    color: var(--color-border-hover);
     font-size: 1.1rem;
     width: 1.1rem;
     height: 1.1rem;
 }
 
 .chat-item.active {
-    background-color: #2d2d2f;
+    background-color: var(--color-border);
 }
 
 .clear-search {
@@ -197,7 +197,7 @@
     padding: 0;
     background: transparent;
     border: none;
-    color: #605e5e;
+    color: var(--color-border-hover);
     cursor: pointer;
 
     &:hover {

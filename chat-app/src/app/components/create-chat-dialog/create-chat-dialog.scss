@@ -4,8 +4,8 @@
     width: 380px;
     max-width: 90vw;
     max-height: 85vh;
-    background-color: #19191a;
-    border: 1px solid #2d2d2f;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     color: white;
 }
@@ -14,7 +14,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 1rem;
-    border-bottom: 1px solid #2d2d2f;
+    border-bottom: 1px solid var(--color-border);
 
     h2 {
         margin: 0;
@@ -47,7 +47,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    border-top: 1px solid #2d2d2f;
+    border-top: 1px solid var(--color-border);
     padding-top: 1rem;
 }
 
@@ -99,14 +99,14 @@
 .dialog select {
     width: 90%;
     padding: 0.5rem 0.75rem;
-    background-color: #111112;
-    border: 1px solid #2d2d2f;
+    background-color: var(--color-surface-deep);
+    border: 1px solid var(--color-border);
     color: white;
     font-family: inherit;
     outline: none;
 
     &:focus {
-        border-color: #605e5e;
+        border-color: var(--color-border-hover);
     }
 }
 
@@ -126,7 +126,7 @@
     cursor: pointer;
 
     &:hover {
-        background-color: #2d2d2f;
+        background-color: var(--color-border);
     }
 }
 
@@ -141,7 +141,7 @@
     justify-content: flex-end;
     gap: 0.5rem;
     padding: 1rem;
-    border-top: 1px solid #2d2d2f;
+    border-top: 1px solid var(--color-border);
 
     button {
         padding: 0.5rem 1rem;
