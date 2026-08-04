@@ -1,0 +1,125 @@
+.dialog {
+    display: flex;
+    flex-direction: column;
+    width: 340px;
+    max-width: 90vw;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: white;
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+
+    h2 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+}
+
+.dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.chat-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+    user-select: none;
+}
+
+.chat-name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.dialog input[type='password'] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--color-surface-deep);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: white;
+    font-family: inherit;
+    outline: none;
+
+    &:focus {
+        border-color: var(--color-border-hover);
+    }
+}
+
+.error {
+    margin: 0 1rem;
+    color: #ef4444;
+    font-size: 0.85rem;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-top: 1px solid var(--color-border);
+
+    button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+    }
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--color-text-muted);
+
+    &:hover { color: white; }
+}
+
+.btn-primary {
+    background-color: var(--color-accent);
+    color: white;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+}

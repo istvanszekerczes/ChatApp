@@ -26,7 +26,10 @@ const server = http.createServer(app);
 if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable is required");
 }
-
+/**
+ * Socket.IO Configuration
+ * - The server listens for socket connections and manages user presence and chat events.
+ */
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:4200",
@@ -37,7 +40,11 @@ const io = new Server(server, {
 
 setIo(io);
 
-// Middleware setup
+/**
+ * CORS and Middleware Configuration
+ * - CORS is configured to allow requests from the Angular frontend.
+ * - express.json() and express.urlencoded() are used to parse incoming request bodies.
+ */
 app.use(
   cors({
     origin: "http://localhost:4200",
@@ -47,7 +54,11 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Express Session configuration
+/**
+ * Express Session configuration
+ * - Sessions are used to maintain user authentication state across requests.
+ * - The session secret is loaded from environment variables.
+ */
 const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -60,11 +71,11 @@ const sessionMiddleware = session({
 });
 app.use(sessionMiddleware);
 
-// Initialize Passport middleware
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Share the same session/passport pipeline with socket.io so req.user is available on each socket
+
 const wrap = (middleware: any) => (socket: any, next: (err?: Error) => void) =>
   middleware(socket.request as ExpressRequest, {} as ExpressResponse, next);
 
@@ -77,18 +88,31 @@ io.use((socket, next) => {
   next(new Error("unauthorized"));
 });
 
-// Basic health check route
+/**
+ * Health Check Endpoint
+ * - A simple endpoint to verify that the server is running.
+ */
 app.get("/api/health", (req, res) => {
   res.json({ status: "Server is running!" });
 });
 
-// Authentication Routes
+/**
+ * Authentication Routes
+ * - Routes for user registration, login, and logout.
+ */
 app.use("/api/auth", authRoutes);
 
-// User and Chat routes
+/**
+ * User and Chat Routes
+ * - Routes for managing users and chat functionality.
+ */
 app.use("/api/users", userRoutes);
 app.use("/api/chats", chatRoutes);
 
+/**
+ * Socket.IO Event Handling
+ * - Handles user connections, disconnections, and real-time chat events.
+ */
 io.on("connection", (socket) => {
   const userId = (socket.request as ExpressRequest).user!.id;
   socket.join(`user:${userId}`);
@@ -97,7 +121,6 @@ io.on("connection", (socket) => {
     io.emit("presence_changed", { userId, online: true, lastOnline: null });
   }
 
-  // Handling incoming real-time messages
   socket.on("join_chat", async (chatId: string) => {
     if (!(await canAccessChat(userId, chatId))) {
       socket.emit("error", { message: "No access to this chat" });

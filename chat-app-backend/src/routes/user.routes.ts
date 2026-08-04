@@ -5,6 +5,10 @@ import { getOnlineUserIds } from '../lib/presense';
 
 const router = Router();
 
+/**
+ * GET /api/users
+ * List all users except the authenticated user. Include their online status.
+ */
 router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const users = await prisma.user.findMany({

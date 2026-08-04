@@ -52,6 +52,9 @@ export class AddMembersDialog {
     this.dialogRef.close();
   }
 
+  /**
+   * Submits the selected user IDs to add them as participants to the chat.
+   */
   submit() {
     const ids = [...this.selectedIds()];
     if (!ids.length) return;

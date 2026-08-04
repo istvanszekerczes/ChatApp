@@ -15,6 +15,10 @@ export class ChatInput {
 
   messageText = '';
 
+  /**
+   * Sends a message with the current content of the messageText property.
+   * If the messageText is empty or only contains whitespace, the method returns without sending.
+   */
   sendMessage() {
     const content = this.messageText.trim();
     if (!content) return;

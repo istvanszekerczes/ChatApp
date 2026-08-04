@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { UserService } from '../../services/user';
 import { UserItem } from '../user-item/user-item';
 import { User } from '../../models/user';
+import { ChatService } from '../../services/chat';
 
 @Component({
   selector: 'app-user-list',
@@ -13,6 +14,8 @@ export class UserList {
   private userService = inject(UserService);
 
   readonly loading = this.userService.loading;
+
+  private chatService = inject(ChatService);
 
   readonly onlineUsers = computed(() =>
     this.userService.users().filter(u => u.online)
@@ -29,6 +32,6 @@ export class UserList {
   );
 
   onMessage(user: User) {
-    console.log('start DM with', user.username);
+    this.chatService.openDirectChat(user.id);
   }
 }

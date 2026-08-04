@@ -1,0 +1,36 @@
+<div class="dialog">
+    <header class="dialog-header">
+        <h2>Protected group</h2>
+        <button class="btn-icon" (click)="close()" aria-label="Close">
+            <mat-icon>close</mat-icon>
+        </button>
+    </header>
+
+    <div class="dialog-body">
+        <div class="chat-preview">
+            <span class="avatar" [style.background-color]="chat.avatarColor || '#3b82f6'">
+                {{ chat.name | initial }}
+            </span>
+            <span class="chat-name">{{ chat.name }}</span>
+        </div>
+
+        <label class="field-label" for="join-password">Password</label>
+        <input
+            id="join-password"
+            type="password"
+            placeholder="Enter password"
+            [(ngModel)]="password"
+            (keyup.enter)="submit()" />
+    </div>
+
+    @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+    }
+
+    <footer class="dialog-footer">
+        <button class="btn-secondary" (click)="close()">Cancel</button>
+        <button class="btn-primary" [disabled]="submitting()" (click)="submit()">
+            {{ submitting() ? 'Joining…' : 'Join' }}
+        </button>
+    </footer>
+</div>

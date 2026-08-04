@@ -51,6 +51,9 @@ export class ChatInfo {
     });
   }
 
+  /**
+   * Removes the current user from the active chat.
+   */
   leave() {
     const chat = this.activeChat();
     const me = this.currentUser();
@@ -62,6 +65,9 @@ export class ChatInfo {
     });
   }
 
+  /**
+   * Deletes the currently active chat.
+   */
   deleteGroup() {
     const chat = this.activeChat();
     if (!chat) return;
@@ -72,6 +78,9 @@ export class ChatInfo {
     });
   }
 
+  /**
+   * Opens the dialog to add members to the active chat.
+   */
   openAddMembers() {
     const chat = this.activeChat();
     if (!chat) return;
@@ -83,6 +92,8 @@ export class ChatInfo {
         chatId: chat.id,
         existingIds: this.participants().map(p => p.id),
       },
+    }).afterClosed().subscribe(added => {
+      if (added) this.chatService.loadParticipants(chat.id);
     });
   }
 }

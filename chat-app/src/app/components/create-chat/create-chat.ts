@@ -1,8 +1,8 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateChatDialog } from '../create-chat-dialog/create-chat-dialog';
-import { Chat } from '../../models/chat';
+import { CreateDmDialog } from '../create-dm-dialog/create-dm-dialog';
 
 @Component({
   selector: 'app-create-chat',
@@ -13,7 +13,15 @@ import { Chat } from '../../models/chat';
 export class CreateChat {
   private dialog = inject(MatDialog);
 
+  readonly mode = input<'groups' | 'direct'>('groups');
+
   openDialog() {
-    this.dialog.open(CreateChatDialog, { panelClass: 'chat-dialog-panel', autoFocus: false });
+    const config = { panelClass: 'chat-dialog-panel', autoFocus: false };
+
+    if (this.mode() === 'direct') {
+      this.dialog.open(CreateDmDialog, config);
+    } else {
+      this.dialog.open(CreateChatDialog, config);
+    }
   }
 }

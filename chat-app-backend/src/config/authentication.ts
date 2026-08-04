@@ -3,7 +3,9 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { prisma } from '../lib/prisma';
 
-// Configure Local Strategy (Username & Password)
+/**
+ * Configure Local Strategy (Username & Password)
+ */
 passport.use(
   new LocalStrategy(
     { usernameField: 'email' }, 
@@ -28,12 +30,18 @@ passport.use(
   )
 );
 
-// Save user id in session
+/**
+ * Configure Passport Session Management
+ * - Serialize user ID to store in session.
+ * - Deserialize user from database using the stored ID.
+ */
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
-// Retrieve user from database using the session id
+/**
+ * Retrieve user from database using the session id
+ */
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await prisma.user.findUnique({

@@ -18,6 +18,10 @@ export class Register {
   password = '';
   errorMessage = '';
 
+  /**
+   * Handles the registration process by calling the AuthService's register method with the provided email, username, and password.
+   * On successful registration, navigates to the login page. On failure, sets an appropriate error message.
+   */
   onRegister() {
     this.authService.register({ email: this.email, username: this.username, password: this.password }).subscribe({
       next: (response) => {

@@ -2,21 +2,21 @@
     <button
         class="public-chat"
         [class.active]="activeFilter() === 'PUBLIC_GROUP'"
-        (click)="toggleFilter('PUBLIC_GROUP')">
+        (click)="setFilter('PUBLIC_GROUP')">
         <mat-icon>public</mat-icon>
         <span>Public Chats</span>
     </button>
     <button
         class="private-chat"
         [class.active]="activeFilter() === 'PRIVATE_GROUP'"
-        (click)="toggleFilter('PRIVATE_GROUP')">
+        (click)="setFilter('PRIVATE_GROUP')">
         <mat-icon>lock_open</mat-icon>
         <span>Private Chats</span>
     </button>
     <button
         class="protected-chat"
         [class.active]="activeFilter() === 'PROTECTED_GROUP'"
-        (click)="toggleFilter('PROTECTED_GROUP')">
+        (click)="setFilter('PROTECTED_GROUP')">
         <mat-icon>lock</mat-icon>
         <span>Protected Chats</span>
     </button>
@@ -28,7 +28,7 @@
         type="text"
         placeholder="Search chats..."
         [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)" />
+        (ngModelChange)="onSearchChange($event)" />
     @if (searchTerm()) {
         <button class="clear-search" (click)="clearSearch()" aria-label="Clear search">
             <mat-icon>close</mat-icon>
@@ -39,7 +39,10 @@
 <ul class="chat-list">
     @for (chat of visibleChats(); track chat.id) {
         <li>
-            <button class="chat-item" [class.active]="activeChat()?.id === chat.id" (click)="selectChat(chat)">
+            <button
+                class="chat-item"
+                [class.active]="activeChat()?.id === chat.id"
+                (click)="selectChat(chat)">
                 <span
                     class="avatar"
                     [style.background-color]="chat.avatarColor || '#3b82f6'">
@@ -47,12 +50,14 @@
                 </span>
                 <span class="chat-meta">
                     <span class="chat-name">{{ chat.name }}</span>
-                    <span class="chat-sub">
-                        {{ chat.participantCount }} members
-                        @if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
-                            · <mat-icon class="inline-icon">lock</mat-icon>
-                        }
-                    </span>
+                    @if (chat.type !== 'PUBLIC_GROUP') {
+                        <span class="chat-sub">
+                            {{ chat.participantCount }} members
+                            @if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
+                                <mat-icon class="inline-icon">lock</mat-icon>
+                            }
+                        </span>
+                    }
                 </span>
             </button>
         </li>
@@ -60,10 +65,10 @@
         <li class="empty">
             @if (loading()) {
                 Loading…
-            } @else if (searchTerm() || activeFilter()) {
+            } @else if (searchTerm()) {
                 No matching chats
             } @else {
-                No chats yet
+                No chats here yet
             }
         </li>
     }

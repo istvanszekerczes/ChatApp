@@ -1,0 +1,45 @@
+<div class="search-container">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input
+        type="text"
+        placeholder="Search conversations..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)" />
+    @if (searchTerm()) {
+        <button class="clear-search" (click)="clearSearch()" aria-label="Clear search">
+            <mat-icon>close</mat-icon>
+        </button>
+    }
+</div>
+
+<ul class="chat-list">
+    @for (chat of visibleChats(); track chat.id) {
+        <li>
+            <button
+                class="chat-item"
+                [class.active]="activeChat()?.id === chat.id"
+                (click)="selectChat(chat)">
+                <span
+                    class="avatar"
+                    [style.background-color]="chat.avatarColor || '#3b82f6'">
+                    {{ chat.name | initial }}
+                </span>
+                <span class="chat-meta">
+                    <span class="chat-name">{{ chat.name }}</span>
+                </span>
+            </button>
+        </li>
+    } @empty {
+        <li class="empty">
+            @if (loading()) {
+                Loading…
+            } @else if (searchTerm()) {
+                No matching conversations
+            } @else {
+                No conversations yet
+            }
+        </li>
+    }
+</ul>
+
+<div class="divider"></div>

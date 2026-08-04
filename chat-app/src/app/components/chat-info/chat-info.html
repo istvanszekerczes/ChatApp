@@ -4,66 +4,76 @@
             {{ chat.name | initial }}
         </span>
         <span class="chat-title">{{ chat.name }}</span>
-        <span class="chat-type">{{ typeLabels[chat.type] }}</span>
-        <span class="chat-members">{{ chat.participantCount }} members</span>
+        @if (chat.type !== 'DIRECT') {
+            <span class="chat-type">{{ typeLabels[chat.type] }}</span>
+        }
+        @if (chat.type === 'PRIVATE_GROUP' || chat.type === 'PROTECTED_GROUP') {
+            <span class="chat-members">{{ chat.participantCount }} members</span>
+        }
     </div>
 
-    <div class="divider"></div>
+    @if (chat.type !== 'DIRECT') {
+        <div class="divider"></div>
 
-    @if (chat.type !== 'PUBLIC_GROUP') {
-        <div class="info-content">
-            <div class="section-label">
-                <span>Participants</span>
-                @if (isOwner()) {
-                    <button class="btn-icon" (click)="openAddMembers()" aria-label="Add members">
-                        <mat-icon>person_add</mat-icon>
-                    </button>
-                }
-            </div>
-
-            <ul class="participant-list">
-                @if (loading()) {
-                    <li class="empty">Loading…</li>
-                } @else {
-                    @for (user of participants(); track user.id) {
-                        <li class="participant">
-                            <span class="avatar avatar-sm"
-                                  [style.background-color]="user.avatarColor || '#3b82f6'">
-                                {{ user.username | initial }}
-                            </span>
-                            <span class="participant-name">{{ user.username }}</span>
-                            @if (isCreator(user.id)) {
-                                <mat-icon class="owner-icon" title="Group owner">star</mat-icon>
-                            } @else if (isOwner()) {
-                                <button class="btn-kick" (click)="kick(user)"
-                                        [attr.aria-label]="'Remove ' + user.username">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                            }
-                        </li>
-                    } @empty {
-                        <li class="empty">No participants</li>
+        @if (chat.type !== 'PUBLIC_GROUP') {
+            <div class="info-content">
+                <div class="section-label">
+                    <span>Participants</span>
+                    @if (isOwner() && chat.type === 'PRIVATE_GROUP') {
+                        <button class="btn-icon" (click)="openAddMembers()" aria-label="Add members">
+                            <mat-icon>person_add</mat-icon>
+                        </button>
                     }
-                }
-            </ul>
+                </div>
+
+                <ul class="participant-list">
+                    @if (loading()) {
+                        <li class="empty">Loading…</li>
+                    } @else {
+                        @for (user of participants(); track user.id) {
+                            <li class="participant">
+                                <span class="avatar avatar-sm"
+                                      [style.background-color]="user.avatarColor || '#3b82f6'">
+                                    {{ user.username | initial }}
+                                </span>
+                                <span class="participant-name">{{ user.username }}</span>
+                                @if (isCreator(user.id)) {
+                                    <mat-icon class="owner-icon" title="Group owner">star</mat-icon>
+                                } @else if (isOwner() && chat.type === 'PRIVATE_GROUP') {
+                                    <button class="btn-kick" (click)="kick(user)"
+                                            [attr.aria-label]="'Remove ' + user.username">
+                                        <mat-icon>close</mat-icon>
+                                    </button>
+                                }
+                            </li>
+                        } @empty {
+                            <li class="empty">No participants</li>
+                        }
+                    }
+                </ul>
+            </div>
+        } @else {
+            <div class="info-content">
+                <p class="placeholder">This is a public group. Anyone can join and participate.</p>
+            </div>
+        }
+
+        <div class="info-actions">
+            @if (isOwner()) {
+                <button class="btn-danger" (click)="deleteGroup()">
+                    <mat-icon>delete</mat-icon>
+                    <span>Delete group</span>
+                </button>
+            } @else if (chat.isMember) {
+                <button class="btn-danger" (click)="leave()">
+                    <mat-icon>logout</mat-icon>
+                    <span>Leave group</span>
+                </button>
+            }
         </div>
     } @else {
         <div class="info-content"></div>
     }
-
-    <div class="info-actions">
-        @if (isOwner()) {
-            <button class="btn-danger" (click)="deleteGroup()">
-                <mat-icon>delete</mat-icon>
-                <span>Delete group</span>
-            </button>
-        } @else if (chat.isMember) {
-            <button class="btn-danger" (click)="leave()">
-                <mat-icon>logout</mat-icon>
-                <span>Leave group</span>
-            </button>
-        }
-    </div>
 } @else {
     <p class="placeholder">No chat selected</p>
 }

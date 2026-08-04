@@ -7,12 +7,12 @@
     <div class="sidebar-left-content">
       <app-profile></app-profile>
       <app-chat-type-picker [activeTab]="activeTab()" (tabChange)="activeTab.set($event)" />
-      <app-create-chat></app-create-chat>
+      <app-create-chat [mode]="activeTab()" />
       <div class="chat-container">
         @if (activeTab() === 'groups') {
           <app-group-chat-list></app-group-chat-list>
         } @else {
-          <app-direct-messages-list></app-direct-messages-list>
+          <app-dm-list></app-dm-list>
         }
       </div>
     </div>

@@ -14,7 +14,11 @@ function toSafeUser(user: Express.User) {
   return safeUser;
 }
 
-// Register Route
+/**
+ * POST /api/register
+ * Register a new user with email, username, and password.
+ * Passwords are hashed before storing in the database.
+ */
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, username, password } = req.body;
@@ -48,7 +52,11 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// Login Route
+/**
+ * POST /api/login
+ * Authenticate a user using Passport's local strategy.
+ * On successful login, update the user's lastOnline timestamp.
+ */
 router.post('/login', passport.authenticate('local'), async (req: Request, res: Response) => {
   try {
     await prisma.user.update({
@@ -91,7 +99,10 @@ router.patch('/me', requireAuth, async (req: Request, res: Response): Promise<vo
   }
 });
 
-// Logout Route
+/**
+ * POST /api/logout
+ * Log out the authenticated user and destroy their session.
+ */
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
   req.logout((err) => {
     if (err) return next(err);

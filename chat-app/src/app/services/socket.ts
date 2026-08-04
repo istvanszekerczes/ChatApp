@@ -10,6 +10,12 @@ export class SocketService {
   private socket: Socket | null = null;
   private handlers = new Map<string, Set<Handler>>();
 
+  /**
+   * Connects to the socket server and sets up event listeners for connection, disconnection, and errors.
+   * If the socket is already connected, it does nothing.
+   *  
+   * @returns 
+   */
   connect() {
     if (this.socket) return;
 
@@ -40,6 +46,12 @@ export class SocketService {
     this.socket = null;
   }
 
+  /**
+   * Subscribes to a socket event and returns an Observable that emits when the event is received.
+   *
+   * @param event The event name to listen for.
+   * @returns An Observable that emits when the event is received.
+   */
   on<T>(event: string): Observable<T> {
     return new Observable<T>(subscriber => {
       const handler: Handler = (data) => subscriber.next(data as T);

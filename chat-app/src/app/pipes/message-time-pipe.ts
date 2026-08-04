@@ -4,6 +4,12 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'messageTime',
 })
 
+/**
+ * A pipe that transforms a date or string value into a formatted message time string.
+ * If the date is today, it returns the time in "HH:mm" format.
+ * If the date is yesterday, it returns "Yesterday HH:mm".
+ * Otherwise, it returns the date in "MMM dd HH:mm" format.
+ */
 export class MessageTimePipe implements PipeTransform {
   transform(value: string | Date): string {
     const date = new Date(value);

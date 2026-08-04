@@ -54,7 +54,8 @@
     margin: 0;
     background-color: var(--color-surface);
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
 }
 
 .chat-container {

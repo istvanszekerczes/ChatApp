@@ -30,6 +30,10 @@ export class ChatContainer {
     });
   }
 
+  /**
+   * Sends a message with the current content of the messageText property.
+   * If the messageText is empty or only contains whitespace, the method returns without sending.
+   */
   send() {
     const content = this.messageText.trim();
     if (!content) return;

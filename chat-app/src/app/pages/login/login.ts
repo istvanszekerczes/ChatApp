@@ -17,6 +17,10 @@ export class Login {
   password = '';
   errorMessage = '';
 
+  /**
+   * Handles the login process by calling the AuthService's login method with the provided email and password.
+   * On successful login, navigates to the home page. On failure, sets an appropriate error message.
+   */
   onLogin() {
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (response) => {

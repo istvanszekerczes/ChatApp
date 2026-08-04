@@ -133,7 +133,6 @@
     border: none;
     color: var(--color-text-muted);
     cursor: pointer;
-    opacity: 0;
     transition: opacity 0.2s ease, color 0.2s ease;
 
     &:hover {

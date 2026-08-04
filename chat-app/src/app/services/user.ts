@@ -23,6 +23,9 @@ export class UserService {
 
   private listening = false;
 
+  /**
+   * Loads the list of users from the server and updates the `users` signal.
+   */
   loadUsers() {
     this.loading.set(true);
     this.http
@@ -40,6 +43,9 @@ export class UserService {
       });
   }
 
+  /**
+   * Listens for presence changes and updates the user list accordingly. 
+   */
   listenForPresence() {
     if (this.listening) return;
     this.listening = true;
@@ -57,6 +63,9 @@ export class UserService {
     });
   }
 
+  /**
+   * Clears the list of users, resetting the `users` signal to an empty array.
+   */
   clearUsers() {
     this.users.set([]);
   }

@@ -1,7 +1,7 @@
 <div class="button-container">
     <button class="create-chat-button" (click)="openDialog()">
         <mat-icon>add</mat-icon>
-        <span>Create Chat</span>
+        <span>{{ mode() === 'direct' ? 'New Message' : 'Create Chat' }}</span>
     </button>
 </div>
 <div class="divider"></div>

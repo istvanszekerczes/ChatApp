@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DirectMessagesList } from './direct-messages-list';
+import { CreateDmDialog } from './create-dm-dialog';
 
-describe('DirectMessagesList', () => {
-  let component: DirectMessagesList;
-  let fixture: ComponentFixture<DirectMessagesList>;
+describe('CreateDmDialog', () => {
+  let component: CreateDmDialog;
+  let fixture: ComponentFixture<CreateDmDialog>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DirectMessagesList],
+      imports: [CreateDmDialog],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DirectMessagesList);
+    fixture = TestBed.createComponent(CreateDmDialog);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

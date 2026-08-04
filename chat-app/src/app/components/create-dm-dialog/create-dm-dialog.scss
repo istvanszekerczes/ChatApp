@@ -1,0 +1,114 @@
+.dialog {
+    display: flex;
+    flex-direction: column;
+    width: 340px;
+    max-width: 90vw;
+    max-height: 70vh;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: white;
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+
+    h2 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+}
+
+.dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    min-height: 0;
+}
+
+.dialog input[type='text'] {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--color-surface-deep);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: white;
+    font-family: inherit;
+    outline: none;
+
+    &:focus {
+        border-color: var(--color-border-hover);
+    }
+}
+
+.user-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.4rem;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background-color: var(--color-border);
+    }
+}
+
+.avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: white;
+    user-select: none;
+}
+
+.user-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hint,
+.error {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    padding: 0.5rem;
+}
+
+.error {
+    color: #ef4444;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    display: flex;
+}

@@ -27,6 +27,7 @@ export class App implements OnInit {
         this.chatService.listenForNewChats();
         this.chatService.listenForUserUpdates();
         this.chatService.loadChats();
+        this.chatService.listenForChatEvents();
         this.userService.listenForPresence();
         this.userService.loadUsers();
       } else {

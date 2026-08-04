@@ -1,0 +1,35 @@
+<div class="dialog">
+    <header class="dialog-header">
+        <h2>New message</h2>
+        <button class="btn-icon" (click)="close()" aria-label="Close">
+            <mat-icon>close</mat-icon>
+        </button>
+    </header>
+
+    <div class="dialog-body">
+        <input
+            type="text"
+            placeholder="Search users..."
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)" />
+
+        <ul class="user-list">
+            @for (u of candidates(); track u.id) {
+                <li>
+                    <button class="user-item" [disabled]="submitting()" (click)="start(u)">
+                        <span class="avatar" [style.background-color]="u.avatarColor || '#3b82f6'">
+                            {{ u.username | initial }}
+                        </span>
+                        <span class="user-name">{{ u.username }}</span>
+                    </button>
+                </li>
+            } @empty {
+                <li class="hint">No users found.</li>
+            }
+        </ul>
+    </div>
+
+    @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+    }
+</div>
