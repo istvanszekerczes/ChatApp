@@ -2,12 +2,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ChatService } from '../../services/chat';
-import { InitialPipe } from '../../pipes/initial-pipe';
 import { Chat } from '../../models/chat';
+import { ChatItem } from '../chat-item/chat-item';
 
 @Component({
   selector: 'app-dm-list',
-  imports: [MatIconModule, InitialPipe, FormsModule],
+  imports: [MatIconModule, FormsModule, ChatItem],
   templateUrl: './dm-list.html',
   styleUrl: './dm-list.scss',
 })

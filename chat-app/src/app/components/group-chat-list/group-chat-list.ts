@@ -3,13 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { ChatService } from '../../services/chat';
-import { InitialPipe } from '../../pipes/initial-pipe';
 import { JoinChatDialog } from '../join-chat-dialog/join-chat-dialog';
 import { Chat, ChatType } from '../../models/chat';
+import { ChatItem } from '../chat-item/chat-item';
 
 @Component({
   selector: 'app-group-chat-list',
-  imports: [MatIconModule, InitialPipe, FormsModule],
+  imports: [MatIconModule, FormsModule, ChatItem],
   templateUrl: './group-chat-list.html',
   styleUrl: './group-chat-list.scss',
 })

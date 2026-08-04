@@ -1,1 +1,21 @@
-<p>chat-item works!</p>
+<button
+    class="chat-item"
+    [class.active]="active()"
+    (click)="select.emit(chat())">
+    <span class="avatar" [style.background-color]="avatarColor()">
+        {{ chat().name | initial }}
+    </span>
+    <span class="chat-meta">
+        <span class="chat-name">{{ chat().name }}</span>
+        @if (showCount() || showLock()) {
+            <span class="chat-sub">
+                @if (showCount()) {
+                    {{ chat().participantCount }} members
+                }
+                @if (showLock()) {
+                    <mat-icon class="inline-icon">lock</mat-icon>
+                }
+            </span>
+        }
+    </span>
+</button>

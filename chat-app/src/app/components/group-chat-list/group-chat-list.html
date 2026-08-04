@@ -39,27 +39,10 @@
 <ul class="chat-list">
     @for (chat of visibleChats(); track chat.id) {
         <li>
-            <button
-                class="chat-item"
-                [class.active]="activeChat()?.id === chat.id"
-                (click)="selectChat(chat)">
-                <span
-                    class="avatar"
-                    [style.background-color]="chat.avatarColor || '#3b82f6'">
-                    {{ chat.name | initial }}
-                </span>
-                <span class="chat-meta">
-                    <span class="chat-name">{{ chat.name }}</span>
-                    @if (chat.type !== 'PUBLIC_GROUP') {
-                        <span class="chat-sub">
-                            {{ chat.participantCount }} members
-                            @if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
-                                <mat-icon class="inline-icon">lock</mat-icon>
-                            }
-                        </span>
-                    }
-                </span>
-            </button>
+            <app-chat-item
+                [chat]="chat"
+                [active]="activeChat()?.id === chat.id"
+                (select)="selectChat($event)" />
         </li>
     } @empty {
         <li class="empty">

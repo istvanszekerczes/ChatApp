@@ -4,9 +4,7 @@
             {{ chat.name | initial }}
         </span>
         <span class="chat-title">{{ chat.name }}</span>
-        @if (chat.type !== 'DIRECT') {
-            <span class="chat-type">{{ typeLabels[chat.type] }}</span>
-        }
+        <span class="chat-type">{{ typeLabels[chat.type] }}</span>
         @if (chat.type === 'PRIVATE_GROUP' || chat.type === 'PROTECTED_GROUP') {
             <span class="chat-members">{{ chat.participantCount }} members</span>
         }
@@ -72,7 +70,13 @@
             }
         </div>
     } @else {
-        <div class="info-content"></div>
+        <div class="divider"></div>
+
+        <div class="info-content">
+            <p class="placeholder">
+                This is a private conversation between you and {{ chat.name }}.
+            </p>
+        </div>
     }
 } @else {
     <p class="placeholder">No chat selected</p>

@@ -1,0 +1,84 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: var(--color-border-hover);
+    }
+
+    &.active {
+        background-color: var(--color-border);
+    }
+
+    &.active:hover {
+        background-color: var(--color-border-hover);
+    }
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    user-select: none;
+}
+
+.chat-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.chat-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-sub {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.inline-icon {
+    font-size: 0.85rem;
+    width: 0.85rem;
+    height: 0.85rem;
+}
+
+@container (max-width: 120px) {
+    .chat-meta {
+        display: none;
+    }
+
+    .chat-item {
+        justify-content: center;
+        padding: 0.25rem;
+    }
+}
