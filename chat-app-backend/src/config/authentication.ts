@@ -1,24 +1,25 @@
-import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcrypt';
-import { prisma } from '../lib/prisma';
-
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import bcrypt from "bcrypt";
+import { prisma } from "../lib/prisma";
+import GoogleStrategy from "passport-google-oidc";
+import { Strategy as FacebookStrategy } from "passport-facebook";
 /**
  * Configure Local Strategy (Username & Password)
  */
 passport.use(
   new LocalStrategy(
-    { usernameField: 'email' }, 
+    { usernameField: "email" },
     async (email, password, done) => {
       try {
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.password) {
-          return done(null, false, { message: 'Invalid email or password.' });
+          return done(null, false, { message: "Invalid email or password." });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-          return done(null, false, { message: 'Invalid email or password.' });
+          return done(null, false, { message: "Invalid email or password." });
         }
 
         const { password: _password, ...safeUser } = user;
@@ -26,8 +27,119 @@ passport.use(
       } catch (error) {
         return done(error);
       }
-    }
-  )
+    },
+  ),
+);
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env["GOOGLE_CLIENT_ID"]!,
+      clientSecret: process.env["GOOGLE_CLIENT_SECRET"]!,
+      callbackURL: "/api/auth/oauth2/redirect/google",
+      scope: ["profile", "email"],
+    },
+    async (
+      issuer: string,
+      profile: any,
+      cb: (err: any, user?: any, info?: any) => void,
+    ) => {
+      try {
+        const googleId = profile.id;
+        const email = profile.emails?.[0]?.value;
+        const displayName = profile.displayName || "User";
+
+        let user = await prisma.user.findUnique({
+          where: { googleId },
+        });
+
+        if (!user && email) {
+          user = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (user) {
+            user = await prisma.user.update({
+              where: { id: user.id },
+              data: { googleId },
+            });
+          }
+        }
+
+        if (!user) {
+          let username = displayName;
+
+          await prisma.user.create({
+            data: {
+              googleId,
+              email: email ?? `${googleId}@google.oauth`,
+              username,
+            },
+          });
+        }
+
+        return cb(null, user);
+      } catch (err) {
+        return cb(err);
+      }
+    },
+  ),
+);
+
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env["FACEBOOK_CLIENT_ID"]!,
+      clientSecret: process.env["FACEBOOK_CLIENT_SECRET"]!,
+      callbackURL: "/api/auth/oauth2/redirect/facebook",
+      profileFields: ["id", "displayName", "emails"]
+    },
+    async (
+      accessToken: string,
+      refreshToken: string,
+      profile: any,
+      cb: (err: any, user?: any, info?: any) => void,
+    ) => {
+      try {
+        const facebookId = profile.id;
+        const email = profile.emails?.[0]?.value;
+        const displayName = profile.displayName;
+
+        let user = await prisma.user.findUnique({
+          where: { facebookId },
+        });
+
+        if (!user && email) {
+          user = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (user) {
+            user = await prisma.user.update({
+              where: { id: user.id },
+              data: { facebookId },
+            });
+          }
+        }
+
+        if (!user) {
+          let username = displayName;
+
+          await prisma.user.create({
+            data: {
+              facebookId,
+              email: email ?? `${facebookId}@facebook.oauth`,
+              username,
+            },
+          });
+        }
+
+        return cb(null, user);
+      } catch (err) {
+        return cb(err);
+      }
+    },
+  ),
 );
 
 /**
@@ -47,8 +159,14 @@ passport.deserializeUser(async (id: string, done) => {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
-        id: true, email: true, username: true, avatarColor: true,
-        lastOnline: true, createdAt: true, googleId: true, facebookId: true,
+        id: true,
+        email: true,
+        username: true,
+        avatarColor: true,
+        lastOnline: true,
+        createdAt: true,
+        googleId: true,
+        facebookId: true,
       },
     });
     done(null, user);

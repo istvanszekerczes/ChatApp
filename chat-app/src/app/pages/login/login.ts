@@ -29,10 +29,28 @@ export class Login {
       },
       error: (err) => {
         console.error('Login failed', err);
-        this.errorMessage = err.status === 401
-          ? 'Invalid email or password.'
-          : 'Something went wrong. Please try again.';
-      }
+        this.errorMessage =
+          err.status === 401
+            ? 'Invalid email or password.'
+            : 'Something went wrong. Please try again.';
+      },
     });
+  }
+
+  /**
+   * Initiates the Google login process by calling the AuthService's loginWithGoogle method.
+   * On successful login, navigates to the home page. On failure, sets an appropriate error message.
+   */
+
+  loginWithGoogle() {
+    window.location.href = 'http://localhost:3000/api/auth/login/google';
+  }
+
+  /**
+   * Initiates the Facebook login process by calling the AuthService's loginWithFacebook method.
+   * On successful login, navigates to the home page. On failure, sets an appropriate error message.
+   */
+  loginWithFacebook() {
+    window.location.href = 'http://localhost:3000/api/auth/login/facebook';
   }
 }

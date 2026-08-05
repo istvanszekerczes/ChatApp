@@ -52,7 +52,7 @@ export class AuthService {
       .post<LoginResponse>(`${this.apiUrl}/login`, credentials, { withCredentials: true })
       .pipe(tap((response) => this.currentUserSubject.next(response.user)));
   }
-
+  
   /**
    * Logs the user out and clears their session.
    *

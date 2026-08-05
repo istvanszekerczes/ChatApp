@@ -1,16 +1,19 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import passport from 'passport';
-import { Prisma } from '@prisma/client';
-import bcrypt from 'bcrypt';
-import { prisma } from '../lib/prisma';
-import { isValidAvatarColor } from '../lib/avatar-colors';
-import { requireAuth } from '../middleware/require-auth';
-import { getIo } from '../lib/socket';
+import { Router, Request, Response, NextFunction } from "express";
+import passport from "passport";
+import { Prisma } from "@prisma/client";
+import bcrypt from "bcrypt";
+import { prisma } from "../lib/prisma";
+import { isValidAvatarColor } from "../lib/avatar-colors";
+import { requireAuth } from "../middleware/require-auth";
+import { getIo } from "../lib/socket";
 
 const router = Router();
 
 function toSafeUser(user: Express.User) {
-  const { password, ...safeUser } = user as { password?: string; [key: string]: unknown };
+  const { password, ...safeUser } = user as {
+    password?: string;
+    [key: string]: unknown;
+  };
   return safeUser;
 }
 
@@ -19,12 +22,14 @@ function toSafeUser(user: Express.User) {
  * Register a new user with email, username, and password.
  * Passwords are hashed before storing in the database.
  */
-router.post('/register', async (req: Request, res: Response): Promise<void> => {
+router.post("/register", async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, username, password } = req.body;
 
     if (!email || !username || !password) {
-      res.status(400).json({ error: 'Please provide email, username, and password.' });
+      res
+        .status(400)
+        .json({ error: "Please provide email, username, and password." });
       return;
     }
 
@@ -38,17 +43,21 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    res.status(201).json({ message: 'User created successfully', userId: newUser.id });
+    res
+      .status(201)
+      .json({ message: "User created successfully", userId: newUser.id });
   } catch (error) {
-    console.error('Registration failed:', error);
+    console.error("Registration failed:", error);
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
+      error.code === "P2002"
     ) {
-      res.status(409).json({ error: 'Email or username already in use.' });
+      res.status(409).json({ error: "Email or username already in use." });
       return;
     }
-    res.status(500).json({ error: 'Registration failed. Please try again later.' });
+    res
+      .status(500)
+      .json({ error: "Registration failed. Please try again later." });
   }
 });
 
@@ -57,58 +66,133 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
  * Authenticate a user using Passport's local strategy.
  * On successful login, update the user's lastOnline timestamp.
  */
-router.post('/login', passport.authenticate('local'), async (req: Request, res: Response) => {
-  try {
-    await prisma.user.update({
-      where: { id: req.user!.id },
-      data: { lastOnline: new Date() }
+router.post(
+  "/login",
+  passport.authenticate("local"),
+  async (req: Request, res: Response) => {
+    try {
+      await prisma.user.update({
+        where: { id: req.user!.id },
+        data: { lastOnline: new Date() },
+      });
+    } catch (error) {
+      console.error("Failed to update lastOnline on login:", error);
+    }
+    res.json({
+      message: "Logged in successfully",
+      user: toSafeUser(req.user!),
     });
-  } catch (error) {
-    console.error('Failed to update lastOnline on login:', error);
-  }
-  res.json({ message: 'Logged in successfully', user: toSafeUser(req.user!) });
-});
+  },
+);
 
-router.get('/me', requireAuth, (req: Request, res: Response): void => {
+router.get(
+  "/login/google",
+  passport.authenticate("google", {
+    prompt: "select_account",
+  }),
+);
+
+router.get(
+  "/oauth2/redirect/google",
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:4200/login?error=google_failed",
+  }),
+  async (req: Request, res: Response) => {
+    try {
+      await prisma.user.update({
+        where: { id: req.user!.id },
+        data: { lastOnline: new Date() },
+      });
+    } catch (error) {
+      console.error("Failed to update lastOnline on Google login:", error);
+    }
+    res.redirect("http://localhost:4200/");
+  },
+);
+
+router.get(
+  "/login/facebook",
+  passport.authenticate("facebook", {
+    scope: ["email"],
+  }),
+);
+
+router.get(
+  "/oauth2/redirect/facebook",
+  passport.authenticate("facebook", {
+    failureRedirect: "http://localhost:4200/login?error=facebook_failed",
+  }),
+  async (req: Request, res: Response) => {
+    try {
+      await prisma.user.update({
+        where: { id: req.user!.id },
+        data: { lastOnline: new Date() },
+      });
+    } catch (error) {
+      console.error("Failed to update lastOnline on Facebook login:", error);
+    }
+    res.redirect("http://localhost:4200/");
+  },
+);
+
+router.get('/oauth2/redirect/facebook', passport.authenticate('facebook', {
+  successRedirect: '/',
+  failureRedirect: '/login'
+}));
+
+/**
+ * GET /api/me
+ * Get the authenticated user's information.
+ * Requires authentication.
+ */
+router.get("/me", requireAuth, (req: Request, res: Response): void => {
   res.json({ user: toSafeUser(req.user!) });
 });
 
-router.patch('/me', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  const { avatarColor } = req.body;
+/**
+ * PATCH /api/me
+ * Update the authenticated user's avatar color.
+ */
+router.patch(
+  "/me",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const { avatarColor } = req.body;
 
-  if (!isValidAvatarColor(avatarColor)) {
-    res.status(400).json({ error: 'Invalid avatar color.' });
-    return;
-  }
+    if (!isValidAvatarColor(avatarColor)) {
+      res.status(400).json({ error: "Invalid avatar color." });
+      return;
+    }
 
-  try {
-    const updated = await prisma.user.update({
-      where: { id: req.user!.id },
-      data: { avatarColor },
-    });
-    getIo().emit('user_updated', {
-      id: updated.id,
-      username: updated.username,
-      avatarColor: updated.avatarColor,
-    });
+    try {
+      const updated = await prisma.user.update({
+        where: { id: req.user!.id },
+        data: { avatarColor },
+      });
+      getIo().emit("user_updated", {
+        id: updated.id,
+        username: updated.username,
+        avatarColor: updated.avatarColor,
+      });
 
-    res.json({ user: toSafeUser(updated) });
-  } catch (error) {
-    console.error('Failed to update avatar color:', error);
-    res.status(500).json({ error: 'Could not update avatar color.' });
-  }
-});
+      res.json({ user: toSafeUser(updated) });
+    } catch (error) {
+      console.error("Failed to update avatar color:", error);
+      res.status(500).json({ error: "Could not update avatar color." });
+    }
+  },
+);
 
 /**
  * POST /api/logout
  * Log out the authenticated user and destroy their session.
  */
-router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
+router.post("/logout", (req: Request, res: Response, next: NextFunction) => {
   req.logout((err) => {
     if (err) return next(err);
     req.session.destroy(() => {
-      res.clearCookie('connect.sid');
-      res.json({ message: 'Logged out successfully' });
+      res.clearCookie("connect.sid");
+      res.json({ message: "Logged out successfully" });
     });
   });
 });
