@@ -7,6 +7,7 @@ import { InitialPipe } from '../../pipes/initial-pipe';
 import { User } from '../../models/user';
 import { MatDialog } from '@angular/material/dialog';
 import { AddMembersDialog } from '../add-members-dialog/add-members-dialog';
+import { UserService } from '../../services/user';
 
 @Component({
   selector: 'app-chat-info',
@@ -17,6 +18,7 @@ import { AddMembersDialog } from '../add-members-dialog/add-members-dialog';
 export class ChatInfo {
   private chatService = inject(ChatService);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
 
   readonly activeChat = this.chatService.activeChat;
   readonly participants = this.chatService.participants;
@@ -24,6 +26,10 @@ export class ChatInfo {
   private dialog = inject(MatDialog);
 
   private currentUser = toSignal(this.authService.currentUser$);
+
+  ngOnInit() {
+    this.userService.listenForUserUpdates();
+  }
 
   readonly isOwner = computed(() =>
     !!this.activeChat()?.creatorId &&

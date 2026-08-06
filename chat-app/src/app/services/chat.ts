@@ -153,23 +153,29 @@ export class ChatService {
    * @returns void
    */
   listenForUserUpdates() {
-    if (this.userListenerBound) return;
-    this.userListenerBound = true;
+  if (this.userListenerBound) return;
+  this.userListenerBound = true;
 
-    this.socketService
-      .on<{ id: string; username: string; avatarColor: string | null }>('user_updated')
-      .subscribe((user) => {
-        this.zone.run(() => {
-          this.messages.update((current) =>
-            current.map((msg) =>
-              msg.userId === user.id
-                ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
-                : msg,
-            ),
-          );
-        });
+  this.socketService
+    .on<{ id: string; username: string; avatarColor: string | null }>('user_updated')
+    .subscribe((user) => {
+      this.zone.run(() => {
+        this.messages.update((current) =>
+          current.map((msg) =>
+            msg.userId === user.id
+              ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
+              : msg,
+          ),
+        );
+
+        this.participants.update((current) =>
+          current.map((p) =>
+            p.id === user.id ? { ...p, avatarColor: user.avatarColor, username: user.username } : p,
+          ),
+        );
       });
-  }
+    });
+}
 
   /**
    * Loads the list of chats for the current user.

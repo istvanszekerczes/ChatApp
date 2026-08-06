@@ -11,6 +11,12 @@ interface PresenceEvent {
   lastOnline: string | null;
 }
 
+interface UserUpdatedEvent {
+  id: string;
+  username: string;
+  avatarColor: string | null;
+}
+
 @Service()
 export class UserService {
   private http = inject(HttpClient);
@@ -20,7 +26,7 @@ export class UserService {
 
   readonly users = signal<User[]>([]);
   readonly loading = signal(false);
-
+  private userUpdateListenerBound = false;
   private listening = false;
 
   /**
@@ -42,6 +48,25 @@ export class UserService {
         },
       });
   }
+
+  listenForUserUpdates() {
+    if (this.userUpdateListenerBound) return;
+    this.userUpdateListenerBound = true;
+
+    this.socketService.on<UserUpdatedEvent>('user_updated').subscribe(event => {
+      this.zone.run(() => {
+        this.users.update(current =>
+          current.map(u =>
+            u.id === event.id
+              ? { ...u, username: event.username, avatarColor: event.avatarColor }
+              : u
+          )
+        );
+      });
+    });
+  }
+
+
 
   /**
    * Listens for presence changes and updates the user list accordingly. 

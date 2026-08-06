@@ -18,7 +18,7 @@ function toSafeUser(user: Express.User) {
 }
 
 /**
- * POST /api/register
+ * POST /api/auth/register
  * Register a new user with email, username, and password.
  * Passwords are hashed before storing in the database.
  */
@@ -62,7 +62,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
 });
 
 /**
- * POST /api/login
+ * POST /api/auth/login
  * Authenticate a user using Passport's local strategy.
  * On successful login, update the user's lastOnline timestamp.
  */
@@ -85,6 +85,9 @@ router.post(
   },
 );
 
+/**
+ * Google OAuth
+ */
 router.get(
   "/login/google",
   passport.authenticate("google", {
@@ -110,6 +113,9 @@ router.get(
   },
 );
 
+/**
+ * Facebook OAuth
+ */
 router.get(
   "/login/facebook",
   passport.authenticate("facebook", {
@@ -135,22 +141,16 @@ router.get(
   },
 );
 
-router.get('/oauth2/redirect/facebook', passport.authenticate('facebook', {
-  successRedirect: '/',
-  failureRedirect: '/login'
-}));
-
 /**
- * GET /api/me
+ * GET /api/auth/me
  * Get the authenticated user's information.
- * Requires authentication.
  */
 router.get("/me", requireAuth, (req: Request, res: Response): void => {
   res.json({ user: toSafeUser(req.user!) });
 });
 
 /**
- * PATCH /api/me
+ * PATCH /api/auth/me
  * Update the authenticated user's avatar color.
  */
 router.patch(
@@ -184,7 +184,7 @@ router.patch(
 );
 
 /**
- * POST /api/logout
+ * POST /api/auth/logout
  * Log out the authenticated user and destroy their session.
  */
 router.post("/logout", (req: Request, res: Response, next: NextFunction) => {

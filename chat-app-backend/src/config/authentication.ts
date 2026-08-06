@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma";
 import GoogleStrategy from "passport-google-oidc";
 import { Strategy as FacebookStrategy } from "passport-facebook";
+
 /**
  * Configure Local Strategy (Username & Password)
  */
@@ -31,12 +32,16 @@ passport.use(
   ),
 );
 
+/**
+ * Configure Google Strategy (OIDC)
+ * 
+ */
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env["GOOGLE_CLIENT_ID"]!,
       clientSecret: process.env["GOOGLE_CLIENT_SECRET"]!,
-      callbackURL: "/api/auth/oauth2/redirect/google",
+      callbackURL: "http://localhost:3000/api/auth/oauth2/redirect/google",
       scope: ["profile", "email"],
     },
     async (
@@ -68,8 +73,13 @@ passport.use(
 
         if (!user) {
           let username = displayName;
+          let suffix = 0;
+          while (await prisma.user.findUnique({ where: { username } })) {
+            suffix++;
+            username = `${displayName}${suffix}`;
+          }
 
-          await prisma.user.create({
+          user = await prisma.user.create({
             data: {
               googleId,
               email: email ?? `${googleId}@google.oauth`,
@@ -86,13 +96,16 @@ passport.use(
   ),
 );
 
+/**
+ * Configure Facebook Strategy
+ */
 passport.use(
   new FacebookStrategy(
     {
-      clientID: process.env["FACEBOOK_CLIENT_ID"]!,
-      clientSecret: process.env["FACEBOOK_CLIENT_SECRET"]!,
-      callbackURL: "/api/auth/oauth2/redirect/facebook",
-      profileFields: ["id", "displayName", "emails"]
+      clientID: process.env["FACEBOOK_APP_ID"]!,
+      clientSecret: process.env["FACEBOOK_APP_SECRET"]!,
+      callbackURL: "http://localhost:3000/api/auth/oauth2/redirect/facebook",
+      profileFields: ["id", "displayName", "emails"],
     },
     async (
       accessToken: string,
@@ -103,7 +116,7 @@ passport.use(
       try {
         const facebookId = profile.id;
         const email = profile.emails?.[0]?.value;
-        const displayName = profile.displayName;
+        const displayName = profile.displayName || "User";
 
         let user = await prisma.user.findUnique({
           where: { facebookId },
@@ -124,8 +137,13 @@ passport.use(
 
         if (!user) {
           let username = displayName;
+          let suffix = 0;
+          while (await prisma.user.findUnique({ where: { username } })) {
+            suffix++;
+            username = `${displayName}${suffix}`;
+          }
 
-          await prisma.user.create({
+          user = await prisma.user.create({
             data: {
               facebookId,
               email: email ?? `${facebookId}@facebook.oauth`,

@@ -17,6 +17,10 @@ export class UserList {
 
   private chatService = inject(ChatService);
 
+  ngOnInit() {
+    this.userService.listenForUserUpdates();
+  }
+
   readonly onlineUsers = computed(() =>
     this.userService.users().filter(u => u.online)
   );
