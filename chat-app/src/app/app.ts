@@ -30,6 +30,7 @@ export class App implements OnInit {
         this.chatService.listenForChatEvents();
         this.userService.listenForPresence();
         this.userService.loadUsers();
+        this.userService.listenForNewUsers();
         this.userService.listenForUserUpdates();
       } else {
         this.socketService.disconnect();

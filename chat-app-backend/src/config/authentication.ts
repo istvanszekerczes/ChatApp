@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma";
 import GoogleStrategy from "passport-google-oidc";
 import { Strategy as FacebookStrategy } from "passport-facebook";
+import { getIo } from "../lib/socket";
 
 /**
  * Configure Local Strategy (Username & Password)
@@ -34,7 +35,7 @@ passport.use(
 
 /**
  * Configure Google Strategy (OIDC)
- * 
+ *
  */
 passport.use(
   new GoogleStrategy(
@@ -85,6 +86,14 @@ passport.use(
               email: email ?? `${googleId}@google.oauth`,
               username,
             },
+          });
+
+          getIo().emit("user_registered", {
+            id: user.id,
+            username: user.username,
+            avatarColor: user.avatarColor,
+            online: false,
+            lastOnline: null,
           });
         }
 
@@ -150,8 +159,15 @@ passport.use(
               username,
             },
           });
-        }
 
+          getIo().emit("user_registered", {
+            id: user.id,
+            username: user.username,
+            avatarColor: user.avatarColor,
+            online: false,
+            lastOnline: null,
+          });
+        }
         return cb(null, user);
       } catch (err) {
         return cb(err);

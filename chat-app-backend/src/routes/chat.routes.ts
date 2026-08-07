@@ -571,11 +571,15 @@ router.delete(
 
     const chat = await prisma.chat.findUnique({
       where: { id: chatId },
-      select: { creatorId: true },
+      select: { creatorId: true, type: true },
     });
 
     if (!chat) {
       res.status(404).json({ error: "Chat not found." });
+      return;
+    }
+    if (chat.type === ChatType.DIRECT) {
+      res.status(400).json({ error: "Direct conversations can't be deleted." });
       return;
     }
     if (chat.creatorId !== userId) {
@@ -588,7 +592,7 @@ router.delete(
     try {
       await prisma.chat.delete({ where: { id: chatId } });
       getIo().socketsLeave(chatId);
-      getIo().emit("chat_deleted", { chatId });
+      getIo().to(chatId).emit("chat_deleted", { chatId });
       res.json({ deleted: true });
     } catch (error) {
       console.error("Failed to delete chat:", error);

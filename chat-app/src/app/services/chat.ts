@@ -399,10 +399,14 @@ export class ChatService {
    * @returns void
    */
   closeActiveChat() {
-    this.activeChat.set(null);
-    this.messages.set([]);
-    this.participants.set([]);
+  const chatId = this.activeChat()?.id;
+  if (chatId) {
+    this.socketService.emit('leave_chat', chatId);
   }
+  this.activeChat.set(null);
+  this.messages.set([]);
+  this.participants.set([]);
+}
 
   /**
    * Joins a specified chat.

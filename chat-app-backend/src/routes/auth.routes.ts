@@ -9,6 +9,12 @@ import { getIo } from "../lib/socket";
 
 const router = Router();
 
+/**
+ * Transforms user object to version without password so it's safe to send it to the client.
+ *   
+ * @param user 
+ * @returns 
+ */
 function toSafeUser(user: Express.User) {
   const { password, ...safeUser } = user as {
     password?: string;
@@ -41,6 +47,14 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
         username,
         password: hashedPassword,
       },
+    });
+
+    getIo().emit("user_registered", {
+      id: newUser.id,
+      username: newUser.username,
+      avatarColor: newUser.avatarColor,
+      online: false,
+      lastOnline: null,
     });
 
     res
