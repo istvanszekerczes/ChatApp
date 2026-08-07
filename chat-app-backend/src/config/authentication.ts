@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma";
 import GoogleStrategy from "passport-google-oidc";
 import { Strategy as FacebookStrategy } from "passport-facebook";
-import { getIo } from "../lib/socket";
 
 /**
  * Configure Local Strategy (Username & Password)
@@ -34,160 +33,149 @@ passport.use(
 );
 
 /**
- * Configure Google Strategy (OIDC)
- *
+ * Configure Google Strategy, only if credentials are actually configured.
  */
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env["GOOGLE_CLIENT_ID"]!,
-      clientSecret: process.env["GOOGLE_CLIENT_SECRET"]!,
-      callbackURL: "http://localhost:3000/api/auth/oauth2/redirect/google",
-      scope: ["profile", "email"],
-    },
-    async (
-      issuer: string,
-      profile: any,
-      cb: (err: any, user?: any, info?: any) => void,
-    ) => {
-      try {
-        const googleId = profile.id;
-        const email = profile.emails?.[0]?.value;
-        const displayName = profile.displayName || "User";
+export const GOOGLE_OAUTH_ENABLED = Boolean(
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
+);
 
-        let user = await prisma.user.findUnique({
-          where: { googleId },
-        });
+if (GOOGLE_OAUTH_ENABLED) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        callbackURL: "http://localhost:3000/api/auth/oauth2/redirect/google",
+        scope: ["profile", "email"],
+      },
+      async (
+        issuer: string,
+        profile: any,
+        cb: (err: any, user?: any, info?: any) => void,
+      ) => {
+        try {
+          const googleId = profile.id;
+          const email = profile.emails?.[0]?.value;
+          const displayName = profile.displayName || "User";
 
-        if (!user && email) {
-          user = await prisma.user.findUnique({
-            where: { email },
-          });
+          let user = await prisma.user.findUnique({ where: { googleId } });
 
-          if (user) {
-            user = await prisma.user.update({
-              where: { id: user.id },
-              data: { googleId },
+          if (!user && email) {
+            user = await prisma.user.findUnique({ where: { email } });
+            if (user) {
+              user = await prisma.user.update({
+                where: { id: user.id },
+                data: { googleId },
+              });
+            }
+          }
+
+          if (!user) {
+            let username = displayName;
+            let suffix = 0;
+            while (await prisma.user.findUnique({ where: { username } })) {
+              suffix++;
+              username = `${displayName}${suffix}`;
+            }
+
+            user = await prisma.user.create({
+              data: {
+                googleId,
+                email: email ?? `${googleId}@google.oauth`,
+                username,
+              },
             });
           }
+
+          return cb(null, user);
+        } catch (err) {
+          return cb(err);
         }
-
-        if (!user) {
-          let username = displayName;
-          let suffix = 0;
-          while (await prisma.user.findUnique({ where: { username } })) {
-            suffix++;
-            username = `${displayName}${suffix}`;
-          }
-
-          user = await prisma.user.create({
-            data: {
-              googleId,
-              email: email ?? `${googleId}@google.oauth`,
-              username,
-            },
-          });
-
-          getIo().emit("user_registered", {
-            id: user.id,
-            username: user.username,
-            avatarColor: user.avatarColor,
-            online: false,
-            lastOnline: null,
-          });
-        }
-
-        return cb(null, user);
-      } catch (err) {
-        return cb(err);
-      }
-    },
-  ),
-);
+      },
+    ),
+  );
+} else {
+  console.warn(
+    "[auth] GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET not set — Google login disabled.",
+  );
+}
 
 /**
- * Configure Facebook Strategy
+ * Configure Facebook Strategy, only if credentials are actually configured.
  */
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env["FACEBOOK_APP_ID"]!,
-      clientSecret: process.env["FACEBOOK_APP_SECRET"]!,
-      callbackURL: "http://localhost:3000/api/auth/oauth2/redirect/facebook",
-      profileFields: ["id", "displayName", "emails"],
-    },
-    async (
-      accessToken: string,
-      refreshToken: string,
-      profile: any,
-      cb: (err: any, user?: any, info?: any) => void,
-    ) => {
-      try {
-        const facebookId = profile.id;
-        const email = profile.emails?.[0]?.value;
-        const displayName = profile.displayName || "User";
+export const FACEBOOK_OAUTH_ENABLED = Boolean(
+  process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET,
+);
 
-        let user = await prisma.user.findUnique({
-          where: { facebookId },
-        });
+if (FACEBOOK_OAUTH_ENABLED) {
+  passport.use(
+    new FacebookStrategy(
+      {
+        clientID: process.env.FACEBOOK_APP_ID!,
+        clientSecret: process.env.FACEBOOK_APP_SECRET!,
+        callbackURL: "http://localhost:3000/api/auth/oauth2/redirect/facebook",
+        profileFields: ["id", "displayName", "emails"],
+      },
+      async (
+        accessToken: string,
+        refreshToken: string,
+        profile: any,
+        cb: (err: any, user?: any, info?: any) => void,
+      ) => {
+        try {
+          const facebookId = profile.id;
+          const email = profile.emails?.[0]?.value;
+          const displayName = profile.displayName || "User";
 
-        if (!user && email) {
-          user = await prisma.user.findUnique({
-            where: { email },
-          });
+          let user = await prisma.user.findUnique({ where: { facebookId } });
 
-          if (user) {
-            user = await prisma.user.update({
-              where: { id: user.id },
-              data: { facebookId },
+          if (!user && email) {
+            user = await prisma.user.findUnique({ where: { email } });
+            if (user) {
+              user = await prisma.user.update({
+                where: { id: user.id },
+                data: { facebookId },
+              });
+            }
+          }
+
+          if (!user) {
+            let username = displayName;
+            let suffix = 0;
+            while (await prisma.user.findUnique({ where: { username } })) {
+              suffix++;
+              username = `${displayName}${suffix}`;
+            }
+
+            user = await prisma.user.create({
+              data: {
+                facebookId,
+                email: email ?? `${facebookId}@facebook.oauth`,
+                username,
+              },
             });
           }
+
+          return cb(null, user);
+        } catch (err) {
+          return cb(err);
         }
-
-        if (!user) {
-          let username = displayName;
-          let suffix = 0;
-          while (await prisma.user.findUnique({ where: { username } })) {
-            suffix++;
-            username = `${displayName}${suffix}`;
-          }
-
-          user = await prisma.user.create({
-            data: {
-              facebookId,
-              email: email ?? `${facebookId}@facebook.oauth`,
-              username,
-            },
-          });
-
-          getIo().emit("user_registered", {
-            id: user.id,
-            username: user.username,
-            avatarColor: user.avatarColor,
-            online: false,
-            lastOnline: null,
-          });
-        }
-        return cb(null, user);
-      } catch (err) {
-        return cb(err);
-      }
-    },
-  ),
-);
+      },
+    ),
+  );
+} else {
+  console.warn(
+    "[auth] FACEBOOK_APP_ID/FACEBOOK_APP_SECRET not set — Facebook login disabled.",
+  );
+}
 
 /**
  * Configure Passport Session Management
- * - Serialize user ID to store in session.
- * - Deserialize user from database using the stored ID.
  */
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
-/**
- * Retrieve user from database using the session id
- */
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await prisma.user.findUnique({

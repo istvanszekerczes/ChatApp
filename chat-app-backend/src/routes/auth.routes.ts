@@ -6,6 +6,7 @@ import { prisma } from "../lib/prisma";
 import { isValidAvatarColor } from "../lib/avatar-colors";
 import { requireAuth } from "../middleware/require-auth";
 import { getIo } from "../lib/socket";
+import { GOOGLE_OAUTH_ENABLED, FACEBOOK_OAUTH_ENABLED } from "../config/authentication";
 
 const router = Router();
 
@@ -21,6 +22,16 @@ function toSafeUser(user: Express.User) {
     [key: string]: unknown;
   };
   return safeUser;
+}
+
+function requireOAuthEnabled(enabled: boolean, provider: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!enabled) {
+      res.status(501).json({ error: `${provider} login is not configured on this server.` });
+      return;
+    }
+    next();
+  };
 }
 
 /**
@@ -100,10 +111,12 @@ router.post(
 );
 
 /**
- * Google OAuth
+ * GET /login/google
+ * Google authentication endpoint
  */
 router.get(
   "/login/google",
+  requireOAuthEnabled(GOOGLE_OAUTH_ENABLED, "Google"),
   passport.authenticate("google", {
     prompt: "select_account",
   }),
@@ -111,6 +124,7 @@ router.get(
 
 router.get(
   "/oauth2/redirect/google",
+  requireOAuthEnabled(GOOGLE_OAUTH_ENABLED, "Google"),
   passport.authenticate("google", {
     failureRedirect: "http://localhost:4200/login?error=google_failed",
   }),
@@ -128,10 +142,12 @@ router.get(
 );
 
 /**
- * Facebook OAuth
+ * GET /login/facebook
+ * Facebook authentication endpoint
  */
 router.get(
   "/login/facebook",
+  requireOAuthEnabled(FACEBOOK_OAUTH_ENABLED, "Facebook"),
   passport.authenticate("facebook", {
     scope: ["email"],
   }),
@@ -139,6 +155,7 @@ router.get(
 
 router.get(
   "/oauth2/redirect/facebook",
+  requireOAuthEnabled(FACEBOOK_OAUTH_ENABLED, "Facebook"),
   passport.authenticate("facebook", {
     failureRedirect: "http://localhost:4200/login?error=facebook_failed",
   }),
@@ -154,7 +171,6 @@ router.get(
     res.redirect("http://localhost:4200/");
   },
 );
-
 /**
  * GET /api/auth/me
  * Get the authenticated user's information.
