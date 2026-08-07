@@ -12,19 +12,7 @@
         <div #scrollAnchor></div>
     </div>
 
-    <div class="input-container">
-        <input
-            type="text"
-            placeholder="Type a message..."
-            [(ngModel)]="messageText"
-            (keyup.enter)="send()" />
-        <button
-            [disabled]="!messageText.trim()"
-            (click)="send()"
-            aria-label="Send message">
-            <mat-icon>send</mat-icon>
-        </button>
-    </div>
+    <app-chat-input (send)="send($event)" />
 } @else {
     <p class="placeholder centered">Pick a chat to start messaging</p>
 }

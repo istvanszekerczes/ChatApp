@@ -8,24 +8,41 @@ import { MatIconModule } from '@angular/material/icon';
 import { PanelService } from '../../services/panel';
 import { ChatTypePicker } from '../../components/chat-type-picker/chat-type-picker';
 import { DmList } from '../../components/dm-list/dm-list';
+import { User } from '../../models/user';
+import { ChatService } from '../../services/chat';
 
 @Component({
   selector: 'app-home',
-  imports: [Profile, ChatArea, CreateChat, DmList, UserList, GroupChatList, MatIconModule, ChatTypePicker],
+  imports: [
+    Profile,
+    ChatArea,
+    CreateChat,
+    DmList,
+    UserList,
+    GroupChatList,
+    MatIconModule,
+    ChatTypePicker,
+  ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
 export class Home {
+  private chatService = inject(ChatService);
   readonly panels = inject(PanelService);
   leftExpanded = signal(false);
   rightExpanded = signal(false);
   activeTab = signal<'groups' | 'direct'>('groups');
 
   toggleLeft() {
-    this.leftExpanded.update(v => !v);
+    this.leftExpanded.update((v) => !v);
   }
 
   toggleRight() {
-    this.rightExpanded.update(v => !v);
+    this.rightExpanded.update((v) => !v);
+  }
+
+  onStartDm(user: User) {
+    this.activeTab.set('direct');
+    this.chatService.openDirectChat(user.id);
   }
 }

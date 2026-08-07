@@ -1,14 +1,23 @@
 <div class="input-container">
+  <button class="emoji-button" (click)="showEmojiPicker = !showEmojiPicker" aria-label="Add emoji">
+    <mat-icon>mood</mat-icon>
+  </button>
+  @if (showEmojiPicker) {
+    <app-emoji-picker (emojiSelect)="onEmojiSelect($event)" (close)="showEmojiPicker = false" />
+  }
   <input
+    id="messageInput"
     type="text"
     placeholder="Type a message..."
     [(ngModel)]="messageText"
-    (keyup.enter)="sendMessage()" />
+    (keyup.enter)="onSend()"
+  />
   <button
     mat-icon-button
     [disabled]="!messageText.trim()"
-    (click)="sendMessage()"
-    aria-label="Send message">
+    (click)="onSend()"
+    aria-label="Send message"
+  >
     <mat-icon>send</mat-icon>
   </button>
 </div>

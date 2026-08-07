@@ -1,12 +1,12 @@
 import { Component, ElementRef, effect, inject, viewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ChatService } from '../../services/chat';
 import { MessageItem } from '../message-item/message-item';
+import { ChatInput } from '../chat-input/chat-input';
 
 @Component({
   selector: 'app-chat-container',
-  imports: [FormsModule, MatIconModule, MessageItem],
+  imports: [MatIconModule, MessageItem, ChatInput],
   templateUrl: './chat-container.html',
   styleUrl: './chat-container.scss',
 })
@@ -19,8 +19,6 @@ export class ChatContainer {
 
   private scrollAnchor = viewChild<ElementRef<HTMLElement>>('scrollAnchor');
 
-  messageText = '';
-
   constructor() {
     effect(() => {
       this.messages();
@@ -31,13 +29,9 @@ export class ChatContainer {
   }
 
   /**
-   * Sends a message with the current content of the messageText property.
-   * If the messageText is empty or only contains whitespace, the method returns without sending.
+   * Sends the given message content with the ChatService.
    */
-  send() {
-    const content = this.messageText.trim();
-    if (!content) return;
-    this.chatService.sendMessage(content);
-    this.messageText = '';
+  send(text: string) {
+    this.chatService.sendMessage(text);
   }
 }

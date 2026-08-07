@@ -1,8 +1,9 @@
-import { Component, computed, inject } from '@angular/core';
 import { UserService } from '../../services/user';
 import { UserItem } from '../user-item/user-item';
 import { User } from '../../models/user';
 import { ChatService } from '../../services/chat';
+import { Component, computed, inject, input, output } from '@angular/core';
+
 
 @Component({
   selector: 'app-user-list',
@@ -35,7 +36,10 @@ export class UserList {
       })
   );
 
+  readonly messageUser = output<User>();
+
   onMessage(user: User) {
+    this.messageUser.emit(user);
     this.chatService.openDirectChat(user.id);
   }
 }

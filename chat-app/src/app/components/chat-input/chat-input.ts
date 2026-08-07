@@ -1,29 +1,35 @@
-import { Component, inject } from '@angular/core';
+import { Component, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { ChatService } from '../../services/chat';
+import { EmojiPicker } from '../emoji-picker/emoji-picker';
 
 @Component({
   selector: 'app-chat-input',
-  imports: [FormsModule, MatIconModule, MatButtonModule],
+  imports: [FormsModule, MatIconModule, MatButtonModule, EmojiPicker],
   templateUrl: './chat-input.html',
   styleUrl: './chat-input.scss',
 })
 export class ChatInput {
-  private chatService = inject(ChatService);
-
   messageText = '';
+  showEmojiPicker = false;
+
+  send = output<string>();
 
   /**
-   * Sends a message with the current content of the messageText property.
-   * If the messageText is empty or only contains whitespace, the method returns without sending.
+   * Emits the trimmed message text via the `send` output and clears the input.
+   * Does nothing if messageText is empty or only whitespace.
    */
-  sendMessage() {
-    const content = this.messageText.trim();
-    if (!content) return;
+  onSend() {
+    const text = this.messageText.trim();
+    if (!text) return;
 
-    this.chatService.sendMessage(content);
+    this.send.emit(text);
     this.messageText = '';
   }
-}
+
+  onEmojiSelect(emoji: string) {
+    this.messageText += emoji;
+    this.showEmojiPicker = false;
+  }
+} 
