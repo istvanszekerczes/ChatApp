@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { ChatType } from "@prisma/client";
+import { ChatType, Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/require-auth";
@@ -328,53 +328,78 @@ router.post(
       createdAt: true, creatorId: true,
     } as const;
 
+    type ChatRow = {
+      id: string;
+      type: ChatType;
+      name: string | null;
+      avatarColor: string | null;
+      createdAt: Date;
+      creatorId: string | null;
+    };
+
+    const buildPayload = (chat: ChatRow) => ({
+      ...chat,
+      name: target.username,
+      avatarColor: target.avatarColor,
+      otherUserId: target.id,
+      participantCount: 2,
+      isMember: true,
+    });
+
+    const directKey = [me.id, targetId].sort().join("_");
+
     try {
       const existing = await prisma.chat.findFirst({
-        where: {
-          type: ChatType.DIRECT,
-          AND: [
-            { participants: { some: { userId: me.id } } },
-            { participants: { some: { userId: targetId } } },
-          ],
-        },
+        where: { directKey },
         select: CHAT_FIELDS,
       });
 
-      const chat = existing ?? await prisma.chat.create({
-        data: {
-          type: ChatType.DIRECT,
-          creatorId: me.id,
-          participants: { create: [{ userId: me.id }, { userId: targetId }] },
-        },
-        select: CHAT_FIELDS,
-      });
+      if (existing) {
+        res.status(200).json({ chat: buildPayload(existing) });
+        return;
+      }
 
-      const payload = {
-        ...chat,
-        name: target.username,
-        avatarColor: target.avatarColor,
-        otherUserId: target.id,
-        participantCount: 2,
-        isMember: true,
-      };
+      try {
+        const chat = await prisma.chat.create({
+          data: {
+            type: ChatType.DIRECT,
+            creatorId: me.id,
+            directKey,
+            participants: { create: [{ userId: me.id }, { userId: targetId }] },
+          },
+          select: CHAT_FIELDS,
+        });
 
-      if (!existing) {
         getIo().to(`user:${targetId}`).emit("chat_created", {
-          ...payload,
+          ...buildPayload(chat),
           name: me.username,
           avatarColor: me.avatarColor,
           otherUserId: me.id,
         });
-      }
 
-      res.status(existing ? 200 : 201).json({ chat: payload });
+        res.status(201).json({ chat: buildPayload(chat) });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        ) {
+          const winner = await prisma.chat.findFirst({
+            where: { directKey },
+            select: CHAT_FIELDS,
+          });
+          if (winner) {
+            res.status(200).json({ chat: buildPayload(winner) });
+            return;
+          }
+        }
+        throw error;
+      }
     } catch (error) {
       console.error("Failed to create direct chat:", error);
       res.status(500).json({ error: "Could not create conversation." });
     }
   },
 );
-
 /**
  * GET /api/chats/:id/participants
  * List all participants of a chat. Only accessible if the user is a participant or if the chat is public/protected.

@@ -29,6 +29,7 @@ export class ChatService {
 
   private chatEventsBound = false;
 
+  private pendingDirectChats = new Set<string>();
   /**
    * Selects a chat to view its messages and participants.
    *
@@ -258,16 +259,26 @@ export class ChatService {
    * @returns void
    */
   openDirectChat(targetId: string) {
-    const existing = this.chats().find((c) => c.type === 'DIRECT' && c.otherUserId === targetId);
-    if (existing) {
-      this.selectChat(existing);
-      return;
-    }
-    this.createDirectChat(targetId).subscribe({
-      next: (chat) => this.selectChat(chat),
-      error: (err) => console.error('Failed to open conversation', err),
-    });
+  const existing = this.chats().find((c) => c.type === 'DIRECT' && c.otherUserId === targetId);
+  if (existing) {
+    this.selectChat(existing);
+    return;
   }
+
+  if (this.pendingDirectChats.has(targetId)) return;
+  this.pendingDirectChats.add(targetId);
+
+  this.createDirectChat(targetId).subscribe({
+    next: (chat) => {
+      this.pendingDirectChats.delete(targetId);
+      this.selectChat(chat);
+    },
+    error: (err) => {
+      this.pendingDirectChats.delete(targetId);
+      console.error('Failed to open conversation', err);
+    },
+  });
+}
 
   /**
    * Updates or inserts a chat into the list of chats.

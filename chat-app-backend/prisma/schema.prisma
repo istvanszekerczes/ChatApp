@@ -43,6 +43,8 @@ model Chat {
   creatorId    String?
   creator      User?             @relation("CreatedChats", fields: [creatorId], references: [id], onDelete: SetNull)
   
+  directKey    String?           @unique
+
   // Relations
   messages     Message[]
   participants ChatParticipant[]
