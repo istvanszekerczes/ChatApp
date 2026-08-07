@@ -1,2 +1,9 @@
 @use '../_auth-page' as auth;
 @include auth.auth-page;
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.85rem;
+    text-align: center;
+    margin: -0.5rem 0 0.5rem;
+}

@@ -9,6 +9,7 @@ import { isValidAvatarColor } from "../lib/avatar-colors";
 
 const router = Router();
 const MAX_PARTICIPANTS = 100;
+const MAX_CHAT_NAME_LENGTH = 50;
 
 const GROUP_TYPES = [
   ChatType.PUBLIC_GROUP,
@@ -56,11 +57,6 @@ router.get(
         orderBy: { createdAt: "desc" },
       });
 
-      /** 
-       * Map the chats to include participant count and isMember flag
-       * For direct messages, also include the other user's info
-       */ 
-
       res.json({
         chats: chats.map(({ participants, _count, ...chat }) => {
           const isMember = participants.some((p) => p.userId === userId);
@@ -105,6 +101,13 @@ router.post(
 
     if (!name || typeof name !== "string" || !name.trim()) {
       res.status(400).json({ error: "Group name is required." });
+      return;
+    }
+
+    if (name.trim().length > MAX_CHAT_NAME_LENGTH) {
+      res.status(400).json({
+        error: `Group name cannot exceed ${MAX_CHAT_NAME_LENGTH} characters.`,
+      });
       return;
     }
 
@@ -194,7 +197,6 @@ router.post(
     }
   },
 );
-
 
 /**
  * GET /api/chats/:id/messages
@@ -291,7 +293,9 @@ router.post(
     const participantCount = await prisma.chatParticipant.count({
       where: { chatId },
     });
-    getIo().to(chatId).emit("participants_changed", { chatId, participantCount });
+    getIo()
+      .to(chatId)
+      .emit("participants_changed", { chatId, participantCount });
 
     res.json({ joined: true });
   },
@@ -324,8 +328,12 @@ router.post(
     }
 
     const CHAT_FIELDS = {
-      id: true, type: true, name: true, avatarColor: true,
-      createdAt: true, creatorId: true,
+      id: true,
+      type: true,
+      name: true,
+      avatarColor: true,
+      createdAt: true,
+      creatorId: true,
     } as const;
 
     type ChatRow = {
@@ -370,12 +378,14 @@ router.post(
           select: CHAT_FIELDS,
         });
 
-        getIo().to(`user:${targetId}`).emit("chat_created", {
-          ...buildPayload(chat),
-          name: me.username,
-          avatarColor: me.avatarColor,
-          otherUserId: me.id,
-        });
+        getIo()
+          .to(`user:${targetId}`)
+          .emit("chat_created", {
+            ...buildPayload(chat),
+            name: me.username,
+            avatarColor: me.avatarColor,
+            otherUserId: me.id,
+          });
 
         res.status(201).json({ chat: buildPayload(chat) });
       } catch (error) {

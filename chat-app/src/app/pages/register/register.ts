@@ -3,6 +3,9 @@ import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
 @Component({
   selector: 'app-register',
   imports: [RouterLink, FormsModule],
@@ -23,31 +26,29 @@ export class Register {
    * On successful registration, navigates to the login page. On failure, sets an appropriate error message.
    */
   onRegister() {
-    this.authService.register({ email: this.email, username: this.username, password: this.password }).subscribe({
+    const email = this.email.trim();
+
+    if (!EMAIL_REGEX.test(email)) {
+      this.errorMessage = 'Please provide a valid email address.';
+      return;
+    }
+
+    this.authService.register({ email, username: this.username, password: this.password }).subscribe({
       next: (response) => {
         console.log('Registered successfully!', response);
         this.router.navigate(['/login']);
       },
       error: (err) => {
         console.log('Registration failed', err);
-        this.errorMessage = 'Registration failed. Please try again.';
+        this.errorMessage = err.error?.error ?? 'Registration failed. Please try again.';
       }
     });
   }
-
-  /**
-   * Initiates the Google login process by calling the AuthService's loginWithGoogle method.
-   * On successful login, navigates to the home page. On failure, sets an appropriate error message.
-   */
 
   loginWithGoogle() {
     window.location.href = 'http://localhost:3000/api/auth/login/google';
   }
 
-  /**
-   * Initiates the Facebook login process by calling the AuthService's loginWithFacebook method.
-   * On successful login, navigates to the home page. On failure, sets an appropriate error message.
-   */
   loginWithFacebook() {
     window.location.href = 'http://localhost:3000/api/auth/login/facebook';
   }

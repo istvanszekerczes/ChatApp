@@ -6,28 +6,50 @@
     <form class="auth-form" (ngSubmit)="onRegister()">
       <div class="input-group">
         <label for="username">Username</label>
-        <input type="text" id="username" name="username" [(ngModel)]="username" placeholder="coolcoder99" required>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          [(ngModel)]="username"
+          placeholder="coolcoder99"
+          required
+        />
       </div>
 
       <div class="input-group">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email" [(ngModel)]="email" placeholder="name@example.com" required>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="email"
+          placeholder="name@example.com"
+          required
+        />
       </div>
 
       <div class="input-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" [(ngModel)]="password" placeholder="••••••••" required>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="password"
+          placeholder="••••••••"
+          required
+        />
       </div>
+
+      @if (errorMessage) {
+        <p class="error-message">{{ errorMessage }}</p>
+      }
 
       <button type="submit" class="create-chat-button submit-btn">
         <span>Create Account</span>
       </button>
     </form>
 
-    <div class="divider">
-      <span>or continue with</span>
-    </div>
-
+    <div class="divider"></div>
     <div class="social-auth">
       <a (click)="loginWithGoogle()" class="create-chat-button social-btn">
         <span>Continue with Google</span>
@@ -37,8 +59,6 @@
       </a>
     </div>
 
-    <p class="auth-footer">
-      Already have an account? <a routerLink="/login">Sign in</a>
-    </p>
+    <p class="auth-footer">Already have an account? <a routerLink="/login">Sign in</a></p>
   </div>
 </div>

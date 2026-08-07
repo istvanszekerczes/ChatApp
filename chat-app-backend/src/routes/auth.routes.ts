@@ -6,15 +6,19 @@ import { prisma } from "../lib/prisma";
 import { isValidAvatarColor } from "../lib/avatar-colors";
 import { requireAuth } from "../middleware/require-auth";
 import { getIo } from "../lib/socket";
-import { GOOGLE_OAUTH_ENABLED, FACEBOOK_OAUTH_ENABLED } from "../config/authentication";
+import {
+  GOOGLE_OAUTH_ENABLED,
+  FACEBOOK_OAUTH_ENABLED,
+} from "../config/authentication";
 
 const router = Router();
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Transforms user object to version without password so it's safe to send it to the client.
- *   
- * @param user 
- * @returns 
+ *
+ * @param user
+ * @returns
  */
 function toSafeUser(user: Express.User) {
   const { password, ...safeUser } = user as {
@@ -27,7 +31,9 @@ function toSafeUser(user: Express.User) {
 function requireOAuthEnabled(enabled: boolean, provider: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!enabled) {
-      res.status(501).json({ error: `${provider} login is not configured on this server.` });
+      res
+        .status(501)
+        .json({ error: `${provider} login is not configured on this server.` });
       return;
     }
     next();
@@ -47,6 +53,11 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       res
         .status(400)
         .json({ error: "Please provide email, username, and password." });
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      res.status(400).json({ error: "Please provide a valid email address." });
       return;
     }
 
