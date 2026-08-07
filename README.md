@@ -13,9 +13,9 @@ A real-time chat application with direct messages, public/private/protected grou
 
 ## Tech stack
 
-**Frontend:** Angular, Angular Material, RxJS, Signals
-**Backend:** Node.js, Express, Passport.js, Socket.IO
-**Database:** PostgreSQL, Prisma ORM
+- **Frontend:** Angular, Angular Material, RxJS, Signals
+- **Backend:** Node.js, Express, Passport.js, Socket.IO
+- **Database:** PostgreSQL, Prisma ORM
 
 ## Prerequisites
 
