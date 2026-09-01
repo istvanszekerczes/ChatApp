@@ -1,10 +1,10 @@
 import { Component, OnInit, effect, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { AuthService } from './services/auth';
-import { SocketService } from './services/socket';
-import { ChatService } from './services/chat';
-import { UserService } from './services/user';
+import { AuthService } from './core/services/auth-service';
+import { SocketService } from './core/services/socket-service';
+import { ChatService } from './features/chat/services/chat-service';
+import { UserService } from './features/users/services/user-service';
 
 @Component({
   selector: 'app-root',
