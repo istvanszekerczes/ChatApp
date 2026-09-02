@@ -2,7 +2,7 @@ import { Component, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { EmojiPicker } from '../emoji-picker/emoji-picker';
+import { EmojiPicker } from '../../../../shared/components/emoji-picker/emoji-picker';
 
 @Component({
   selector: 'app-chat-input',
