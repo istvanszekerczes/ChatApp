@@ -1,4 +1,4 @@
-@use '../_auth-page' as auth;
+@use '../../auth-page' as auth;
 @include auth.auth-page;
 
 .error-message {

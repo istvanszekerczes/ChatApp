@@ -1,21 +1,19 @@
 import { Service, NgZone, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, map, tap } from 'rxjs';
 import { Chat, CreateChatPayload } from '../models/chat';
 import { User } from '../../users/models/user';
 import { SocketService } from '../../../core/services/socket-service';
 import { Message } from '../models/message';
-import { environment } from '../../../core/environments/environment';
+import { BackendCommunicator } from '../../../core/services/backend-communicator';
 
 @Service()
 export class ChatService {
-  private http = inject(HttpClient);
   private socketService = inject(SocketService);
   private zone = inject(NgZone);
-  private apiUrl = environment.apiUrl;
   readonly chats = signal<Chat[]>([]);
   readonly loading = signal(false);
   private userListenerBound = false;
+  private backendCommunicator = inject(BackendCommunicator);
 
   private listening = false;
 
@@ -66,7 +64,7 @@ export class ChatService {
   sendMessage(content: string) {
     const chat = this.activeChat();
     if (!chat || !content.trim()) return;
-    this.socketService.emit('send_message', { chatId: chat.id, content: content.trim() });
+    this.backendCommunicator.sendMessage(chat.id, content.trim());
   }
 
   /**
@@ -75,12 +73,11 @@ export class ChatService {
    * @param chatId The ID of the chat for which to load messages.
    * @returns void
    */
+
   private loadMessages(chatId: string) {
     this.messagesLoading.set(true);
-    this.http
-      .get<{ messages: Message[] }>(`${this.apiUrl}/chats/${chatId}/messages`, {
-        withCredentials: true,
-      })
+    this.backendCommunicator
+      .loadMessages(chatId)
       .pipe(map((r) => r.messages))
       .subscribe({
         next: (messages) => {
@@ -104,7 +101,7 @@ export class ChatService {
     if (this.messageListenerBound) return;
     this.messageListenerBound = true;
 
-    this.socketService.on<Message>('receive_message').subscribe((msg) => {
+    this.backendCommunicator.listenForMessages().subscribe((msg) => {
       if (msg.chatId !== this.activeChat()?.id) return;
       this.zone.run(() => {
         this.messages.update((current) =>
@@ -121,8 +118,8 @@ export class ChatService {
    * @returns void
    */
   private refreshChatCount(chatId: string) {
-    this.http
-      .get<{ chats: Chat[] }>(`${this.apiUrl}/chats`, { withCredentials: true })
+    this.backendCommunicator
+      .refreshChatCount(chatId)
       .pipe(map((r) => r.chats.find((c) => c.id === chatId)))
       .subscribe((updated) => {
         if (!updated) return;
@@ -142,7 +139,7 @@ export class ChatService {
     if (this.listening) return;
     this.listening = true;
 
-    this.socketService.on<Chat>('chat_created').subscribe((chat) => {
+    this.backendCommunicator.listenForNewChats().subscribe((chat) => {
       console.log('[socket] chat_created', chat);
       this.zone.run(() => this.upsert(chat));
     });
@@ -154,29 +151,31 @@ export class ChatService {
    * @returns void
    */
   listenForUserUpdates() {
-  if (this.userListenerBound) return;
-  this.userListenerBound = true;
+    if (this.userListenerBound) return;
+    this.userListenerBound = true;
 
-  this.socketService
-    .on<{ id: string; username: string; avatarColor: string | null }>('user_updated')
-    .subscribe((user) => {
-      this.zone.run(() => {
-        this.messages.update((current) =>
-          current.map((msg) =>
-            msg.userId === user.id
-              ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
-              : msg,
-          ),
-        );
+    this.backendCommunicator
+      .listenForUserUpdates()
+      .subscribe((user) => {
+        this.zone.run(() => {
+          this.messages.update((current) =>
+            current.map((msg) =>
+              msg.userId === user.id
+                ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
+                : msg,
+            ),
+          );
 
-        this.participants.update((current) =>
-          current.map((p) =>
-            p.id === user.id ? { ...p, avatarColor: user.avatarColor, username: user.username } : p,
-          ),
-        );
+          this.participants.update((current) =>
+            current.map((p) =>
+              p.id === user.id
+                ? { ...p, avatarColor: user.avatarColor, username: user.username }
+                : p,
+            ),
+          );
+        });
       });
-    });
-}
+  }
 
   /**
    * Loads the list of chats for the current user.
@@ -185,8 +184,8 @@ export class ChatService {
    */
   loadChats() {
     this.loading.set(true);
-    this.http
-      .get<{ chats: Chat[] }>(`${this.apiUrl}/chats`, { withCredentials: true })
+    this.backendCommunicator
+      .loadChats()
       .pipe(map((r) => r.chats))
       .subscribe({
         next: (chats) => {
@@ -217,8 +216,8 @@ export class ChatService {
    * @returns An Observable of the list of users.
    */
   getAllUsers(): Observable<User[]> {
-    return this.http
-      .get<{ users: User[] }>(`${this.apiUrl}/users`, { withCredentials: true })
+    return this.backendCommunicator
+      .getAllUsers()
       .pipe(map((r) => r.users));
   }
 
@@ -229,12 +228,10 @@ export class ChatService {
    * @returns An Observable of the created chat.
    */
   createChat(payload: CreateChatPayload): Observable<Chat> {
-    return this.http
-      .post<{ chat: Chat }>(`${this.apiUrl}/chats`, payload, { withCredentials: true })
-      .pipe(
-        map((r) => r.chat),
-        tap((chat) => this.upsert(chat)),
-      );
+    return this.backendCommunicator.createChat(payload).pipe(
+      map((r) => r.chat),
+      tap((chat) => this.upsert(chat)),
+    );
   }
 
   /**
@@ -244,12 +241,10 @@ export class ChatService {
    * @returns An Observable of the created chat.
    */
   createDirectChat(targetId: string): Observable<Chat> {
-    return this.http
-      .post<{ chat: Chat }>(`${this.apiUrl}/chats/direct`, { targetId }, { withCredentials: true })
-      .pipe(
-        map((r) => r.chat),
-        tap((chat) => this.upsert(chat)),
-      );
+    return this.backendCommunicator.createDirectChat(targetId).pipe(
+      map((r) => r.chat),
+      tap((chat) => this.upsert(chat)),
+    );
   }
 
   /**
@@ -259,26 +254,26 @@ export class ChatService {
    * @returns void
    */
   openDirectChat(targetId: string) {
-  const existing = this.chats().find((c) => c.type === 'DIRECT' && c.otherUserId === targetId);
-  if (existing) {
-    this.selectChat(existing);
-    return;
+    const existing = this.chats().find((c) => c.type === 'DIRECT' && c.otherUserId === targetId);
+    if (existing) {
+      this.selectChat(existing);
+      return;
+    }
+
+    if (this.pendingDirectChats.has(targetId)) return;
+    this.pendingDirectChats.add(targetId);
+
+    this.createDirectChat(targetId).subscribe({
+      next: (chat) => {
+        this.pendingDirectChats.delete(targetId);
+        this.selectChat(chat);
+      },
+      error: (err) => {
+        this.pendingDirectChats.delete(targetId);
+        console.error('Failed to open conversation', err);
+      },
+    });
   }
-
-  if (this.pendingDirectChats.has(targetId)) return;
-  this.pendingDirectChats.add(targetId);
-
-  this.createDirectChat(targetId).subscribe({
-    next: (chat) => {
-      this.pendingDirectChats.delete(targetId);
-      this.selectChat(chat);
-    },
-    error: (err) => {
-      this.pendingDirectChats.delete(targetId);
-      console.error('Failed to open conversation', err);
-    },
-  });
-}
 
   /**
    * Updates or inserts a chat into the list of chats.
@@ -300,10 +295,8 @@ export class ChatService {
    */
   loadParticipants(chatId: string) {
     this.participantsLoading.set(true);
-    this.http
-      .get<{ participants: User[] }>(`${this.apiUrl}/chats/${chatId}/participants`, {
-        withCredentials: true,
-      })
+    this.backendCommunicator
+      .loadParticipants(chatId)
       .pipe(map((r) => r.participants))
       .subscribe({
         next: (participants) => {
@@ -323,13 +316,7 @@ export class ChatService {
    * @returns An Observable of the updated list of participants.
    */
   addParticipants(chatId: string, userIds: string[]): Observable<User[]> {
-    return this.http
-      .post<{ added: User[] }>(
-        `${this.apiUrl}/chats/${chatId}/participants`,
-        { userIds },
-        { withCredentials: true },
-      )
-      .pipe(map((r) => r.added));
+    return this.backendCommunicator.addParticpants(chatId, userIds).pipe(map((r) => r.added));
   }
 
   /**
@@ -340,9 +327,7 @@ export class ChatService {
    * @returns An Observable indicating the success or failure of the operation.
    */
   removeParticipant(chatId: string, userId: string): Observable<unknown> {
-    return this.http.delete(`${this.apiUrl}/chats/${chatId}/participants/${userId}`, {
-      withCredentials: true,
-    });
+    return this.backendCommunicator.removeParticipants(chatId, userId);
   }
 
   /**
@@ -352,7 +337,7 @@ export class ChatService {
    * @returns An Observable indicating the success or failure of the operation.
    */
   deleteChat(chatId: string): Observable<unknown> {
-    return this.http.delete(`${this.apiUrl}/chats/${chatId}`, { withCredentials: true });
+    return this.backendCommunicator.deleteChat(chatId);
   }
 
   /**
@@ -364,7 +349,7 @@ export class ChatService {
     if (this.chatEventsBound) return;
     this.chatEventsBound = true;
 
-    this.socketService.on<{ chatId: string }>('participants_changed').subscribe(({ chatId }) => {
+    this.backendCommunicator.listenForParticipantsChanged().subscribe(({ chatId }) => {
       this.zone.run(() => {
         if (this.activeChat()?.id === chatId) {
           this.loadParticipants(chatId);
@@ -373,14 +358,14 @@ export class ChatService {
       });
     });
 
-    this.socketService.on<{ chatId: string }>('chat_deleted').subscribe(({ chatId }) => {
+    this.backendCommunicator.listenForChatDeleted().subscribe(({ chatId }) => {
       this.zone.run(() => {
         this.chats.update((c) => c.filter((chat) => chat.id !== chatId));
         if (this.activeChat()?.id === chatId) this.closeActiveChat();
       });
     });
 
-    this.socketService.on<{ chatId: string }>('removed_from_chat').subscribe(({ chatId }) => {
+    this.backendCommunicator.listenForRemovedFromChat().subscribe(({ chatId }) => {
       this.zone.run(() => {
         this.chats.update((current) =>
           current.flatMap((chat) => {
@@ -399,7 +384,7 @@ export class ChatService {
       });
     });
 
-    this.socketService.on<{ chatId: string }>('added_to_chat').subscribe(() => {
+    this.backendCommunicator.listenForAddedToChat().subscribe(() => {
       this.zone.run(() => this.loadChats());
     });
   }
@@ -410,14 +395,14 @@ export class ChatService {
    * @returns void
    */
   closeActiveChat() {
-  const chatId = this.activeChat()?.id;
-  if (chatId) {
-    this.socketService.emit('leave_chat', chatId);
+    const chatId = this.activeChat()?.id;
+    if (chatId) {
+      this.socketService.emit('leave_chat', chatId);
+    }
+    this.activeChat.set(null);
+    this.messages.set([]);
+    this.participants.set([]);
   }
-  this.activeChat.set(null);
-  this.messages.set([]);
-  this.participants.set([]);
-}
 
   /**
    * Joins a specified chat.
@@ -427,18 +412,16 @@ export class ChatService {
    * @returns An Observable indicating the success or failure of the operation.
    */
   joinChat(chatId: string, password?: string): Observable<unknown> {
-    return this.http
-      .post(`${this.apiUrl}/chats/${chatId}/join`, { password }, { withCredentials: true })
-      .pipe(
-        tap(() => {
-          this.chats.update((current) =>
-            current.map((c) =>
-              c.id === chatId
-                ? { ...c, isMember: true, participantCount: c.participantCount + 1 }
-                : c,
-            ),
-          );
-        }),
-      );
+    return this.backendCommunicator.joinChat(chatId, password).pipe(
+      tap(() => {
+        this.chats.update((current) =>
+          current.map((c) =>
+            c.id === chatId
+              ? { ...c, isMember: true, participantCount: c.participantCount + 1 }
+              : c,
+          ),
+        );
+      }),
+    );
   }
 }

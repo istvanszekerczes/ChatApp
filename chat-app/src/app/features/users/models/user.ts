@@ -14,3 +14,17 @@ export interface User {
   facebookId: string | null;
   online?: boolean;
 }
+
+export interface PresenceEvent {
+  userId: string;
+  online: boolean;
+  lastOnline: string | null;
+}
+
+export interface NewUserEvent {
+  id: string;
+  username: string;
+  avatarColor: string | null;
+  online: boolean;
+  lastOnline: string | null;
+}

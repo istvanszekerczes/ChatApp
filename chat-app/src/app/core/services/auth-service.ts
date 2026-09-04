@@ -1,24 +1,11 @@
 import { Service, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, map, catchError, of, tap } from 'rxjs';
 import { User } from '../../features/users/models/user';
-import { environment } from '../environments/environment';
-
-interface RegisterResponse {
-  message: string;
-  userId: string;
-}
-
-interface LoginResponse {
-  message: string;
-  user: User;
-}
+import { BackendCommunicator } from './backend-communicator';
 
 @Service()
 export class AuthService {
-  private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/auth`;
-
+  private backendCommunicator = inject(BackendCommunicator);
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
@@ -30,14 +17,8 @@ export class AuthService {
    * @param userData Object containing email, username, and password.
    * @returns An Observable of the server's response containing a message and the new user's ID.
    */
-  register(userData: {
-    email: string;
-    username: string;
-    password: string;
-  }): Observable<RegisterResponse> {
-    return this.http.post<RegisterResponse>(`${this.apiUrl}/register`, userData, {
-      withCredentials: true,
-    });
+  register(userData: { email: string; username: string; password: string }) {
+    return this.backendCommunicator.register(userData);
   }
 
   /**
@@ -47,21 +28,19 @@ export class AuthService {
    * @param credentials Email and password
    * @returns The logged-in user, wrapped in the server's response envelope
    */
-  login(credentials: { email: string; password: string }): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(`${this.apiUrl}/login`, credentials, { withCredentials: true })
+  login(credentials: { email: string; password: string }) {
+    return this.backendCommunicator
+      .login(credentials)
       .pipe(tap((response) => this.currentUserSubject.next(response.user)));
   }
-  
+
   /**
    * Logs the user out and clears their session.
    *
    * @returns An Observable indicating the success or failure of the logout operation.
    */
   logout(): Observable<unknown> {
-    return this.http
-      .post(`${this.apiUrl}/logout`, {}, { withCredentials: true })
-      .pipe(tap(() => this.currentUserSubject.next(null)));
+    return this.backendCommunicator.logout().pipe(tap(() => this.currentUserSubject.next(null)));
   }
 
   /**
@@ -70,7 +49,9 @@ export class AuthService {
    * @returns An Observable of the current user or null if not authenticated.
    */
   loadCurrentUser(): Observable<User | null> {
-    return this.http.get<{ user: User }>(`${this.apiUrl}/me`, { withCredentials: true }).pipe(
+    return this.backendCommunicator
+    .loadCurrentUser()
+    .pipe(
       map((response) => response.user),
       tap((user) => this.currentUserSubject.next(user)),
       catchError(() => {
@@ -87,8 +68,8 @@ export class AuthService {
    * @returns An Observable of the updated user.
    */
   updateAvatarColor(avatarColor: string): Observable<User> {
-    return this.http
-      .patch<{ user: User }>(`${this.apiUrl}/me`, { avatarColor }, { withCredentials: true })
+    return this.backendCommunicator
+      .updateAvatarColor(avatarColor)
       .pipe(
         map((response) => response.user),
         tap((user) => this.currentUserSubject.next(user)),

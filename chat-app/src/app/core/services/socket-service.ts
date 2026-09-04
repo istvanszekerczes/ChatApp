@@ -73,4 +73,8 @@ export class SocketService {
   emit(event: string, data: unknown) {
     this.socket?.emit(event, data);
   }
+
+  request<Response>(event: string, payload?: unknown) {
+    
+  }
 }
