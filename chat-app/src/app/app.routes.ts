@@ -5,7 +5,7 @@ export const routes: Routes = [
     {
         path: '',
         canActivate: [authGuard],
-        loadComponent: () => import('./pages/home/home').then(m => m.Home)
+        loadComponent: () => import('../app/features/chat/pages/home/home').then(m => m.Home)
     },
     {
         path: 'login',
@@ -13,10 +13,10 @@ export const routes: Routes = [
     },
     {
         path: 'register',
-        loadComponent: () => import('./pages/register/register').then(m => m.Register)
+        loadComponent: () => import('./features/auth/pages/register/register').then(m => m.Register)
     },
     {
         path: '**',
-        loadComponent: () => import('./pages/home/home').then(m => m.Home)
+        loadComponent: () => import('../app/features/chat/pages/home/home').then(m => m.Home)
     }
 ];
