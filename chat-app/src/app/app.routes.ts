@@ -8,6 +8,11 @@ export const routes: Routes = [
         loadComponent: () => import('../app/features/chat/pages/home/home').then(m => m.Home)
     },
     {
+        path: 'chat/:id',
+        canActivate: [authGuard],
+        loadComponent: () => import('../app/features/chat/pages/home/home').then(m => m.Home)
+    },
+    {
         path: 'login',
         loadComponent: () => import('./features/auth/pages/login/login').then(m => m.Login)
     },

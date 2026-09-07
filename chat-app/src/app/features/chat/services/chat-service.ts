@@ -5,6 +5,7 @@ import { User } from '../../users/models/user';
 import { SocketService } from '../../../core/services/socket-service';
 import { Message } from '../models/message';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
+import { RouterLink, Router } from '@angular/router';
 
 @Service()
 export class ChatService {
@@ -26,6 +27,7 @@ export class ChatService {
   readonly participantsLoading = signal(false);
 
   private chatEventsBound = false;
+  private router = inject(Router);
 
   private pendingDirectChats = new Set<string>();
   /**
@@ -53,6 +55,7 @@ export class ChatService {
     if (chat.type !== 'PUBLIC_GROUP') {
       this.loadParticipants(chat.id);
     }
+    this.router.navigate(['/chat', chat.id])
   }
 
   /**
