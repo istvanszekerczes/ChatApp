@@ -111,6 +111,10 @@ export class BackendCommunicator {
     );
   }
 
+  public getChat(chatId: string) {
+    return this.http.get<Chat>(`${this.apiUrl}/chats/${chatId}/get`)
+  }
+
   //       ---   User related communications   ---
 
   public loadUsers() {

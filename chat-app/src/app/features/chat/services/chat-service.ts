@@ -202,6 +202,10 @@ export class ChatService {
       });
   }
 
+  getChat(chatId: string): Observable<Chat> {
+    return this.backendCommunicator.getChat(chatId);
+  }
+
   /**
    * Clears the list of chats and resets the active chat and messages.
    *

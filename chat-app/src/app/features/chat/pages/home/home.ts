@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { Profile } from '../../../users/components/profile/profile';
 import { ChatArea } from '../../components/chat-area/chat-area';
 import { CreateChat } from '../../components/create-chat/create-chat';
@@ -10,6 +10,9 @@ import { ChatTypePicker } from '../../components/chat-type-picker/chat-type-pick
 import { DmList } from '../../components/dm-list/dm-list';
 import { User } from '../../../users/models/user';
 import { ChatService } from '../../../chat/services/chat-service';
+import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Chat } from '../../models/chat';
 
 @Component({
   selector: 'app-home',
@@ -32,6 +35,10 @@ export class Home {
   leftExpanded = signal(false);
   rightExpanded = signal(false);
   activeTab = signal<'groups' | 'direct'>('groups');
+
+  private route = inject(ActivatedRoute);
+  private data = toSignal(this.route.data);
+  chat = computed(() => this.data()?.['chat']as Chat);
 
   toggleLeft() {
     this.leftExpanded.update((v) => !v);
