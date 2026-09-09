@@ -45,7 +45,7 @@ export class Home {
     const chat = this.chat();
     if (chat) this.chatService.selectChat(chat);
   });
-}
+} 
 
   toggleLeft() {
     this.leftExpanded.update((v) => !v);

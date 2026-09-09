@@ -6,6 +6,7 @@ import { ChatService } from '../../services/chat-service';
 import { JoinChatDialog } from '../join-chat-dialog/join-chat-dialog';
 import { Chat, ChatType } from '../../models/chat';
 import { ChatItem } from '../chat-item/chat-item';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-group-chat-list',
@@ -19,7 +20,7 @@ export class GroupChatList {
 
   readonly loading = this.chatService.loading;
   readonly activeChat = this.chatService.activeChat;
-
+  private router = inject(Router);
   activeFilter = signal<ChatType>('PUBLIC_GROUP');
   searchTerm = signal('');
 
@@ -27,7 +28,7 @@ export class GroupChatList {
     const filter = this.activeFilter();
     const term = this.searchTerm().trim().toLowerCase();
 
-    return this.chatService.chats().filter(chat => {
+    return this.chatService.chats().filter((chat) => {
       if (chat.type !== filter) return false;
       if (term && !(chat.name ?? '').toLowerCase().includes(term)) return false;
       return true;
@@ -58,20 +59,24 @@ export class GroupChatList {
           data: chat,
         })
         .afterClosed()
-        .subscribe(joined => {
+        .subscribe((joined) => {
           if (!joined) return;
-          const updated = this.chatService.chats().find(c => c.id === chat.id);
-          if (updated) this.chatService.selectChat(updated);
+          const updated = this.chatService.chats().find((c) => c.id === chat.id);
+          if (updated) {
+            //this.chatService.selectChat(updated);
+            this.router.navigate(['/chat', chat.id]);
+          }
         });
       return;
     }
 
-    this.chatService.selectChat(chat);
+    //this.chatService.selectChat(chat);
+    this.router.navigate(['/chat', chat.id]);
   }
 
   private closeIfHidden() {
     const active = this.chatService.activeChat();
-    if (active && !this.visibleChats().some(c => c.id === active.id)) {
+    if (active && !this.visibleChats().some((c) => c.id === active.id)) {
       this.chatService.closeActiveChat();
     }
   }

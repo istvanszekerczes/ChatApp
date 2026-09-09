@@ -55,7 +55,6 @@ export class ChatService {
     if (chat.type !== 'PUBLIC_GROUP') {
       this.loadParticipants(chat.id);
     }
-    this.router.navigate(['/chat', chat.id]);
   }
 
   /**
