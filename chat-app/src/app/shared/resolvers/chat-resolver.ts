@@ -1,13 +1,20 @@
-import {ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot} from '@angular/router';
+import {ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot, Router} from '@angular/router';
 import { Chat } from '../../features/chat/models/chat';
 import { inject } from '@angular/core';
 import { ChatService } from '../../features/chat/services/chat-service';
+import { catchError, of } from 'rxjs';
 
-export const chatResolver: ResolveFn<Chat> = (
+export const chatResolver: ResolveFn<Chat | null> = (
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot,
 ) => {
     const chatService = inject(ChatService);
+    const router = inject(Router);
     const chatId = route.paramMap.get('id')!;
-    return chatService.getChat(chatId);
+    if (!chatId) return of(null);
+    return chatService.getChat(chatId).pipe(
+    catchError(() => {
+      router.navigateByUrl('/');
+      return of(null);
+    }),
+  );
 };

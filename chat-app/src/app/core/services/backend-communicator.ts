@@ -112,8 +112,8 @@ export class BackendCommunicator {
   }
 
   public getChat(chatId: string) {
-    return this.http.get<Chat>(`${this.apiUrl}/chats/${chatId}/get`)
-  }
+  return this.http.get<{ chat: Chat }>(`${this.apiUrl}/chats/${chatId}`, { withCredentials: true });
+}
 
   //       ---   User related communications   ---
 

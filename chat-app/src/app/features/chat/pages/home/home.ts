@@ -1,4 +1,4 @@
-import { Component, signal, inject, computed } from '@angular/core';
+import { Component, signal, inject, computed, effect } from '@angular/core';
 import { Profile } from '../../../users/components/profile/profile';
 import { ChatArea } from '../../components/chat-area/chat-area';
 import { CreateChat } from '../../components/create-chat/create-chat';
@@ -39,6 +39,13 @@ export class Home {
   private route = inject(ActivatedRoute);
   private data = toSignal(this.route.data);
   chat = computed(() => this.data()?.['chat']as Chat);
+
+  constructor() {
+  effect(() => {
+    const chat = this.chat();
+    if (chat) this.chatService.selectChat(chat);
+  });
+}
 
   toggleLeft() {
     this.leftExpanded.update((v) => !v);

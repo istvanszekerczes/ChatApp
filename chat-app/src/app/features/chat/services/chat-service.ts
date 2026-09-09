@@ -55,7 +55,7 @@ export class ChatService {
     if (chat.type !== 'PUBLIC_GROUP') {
       this.loadParticipants(chat.id);
     }
-    this.router.navigate(['/chat', chat.id])
+    this.router.navigate(['/chat', chat.id]);
   }
 
   /**
@@ -157,27 +157,23 @@ export class ChatService {
     if (this.userListenerBound) return;
     this.userListenerBound = true;
 
-    this.backendCommunicator
-      .listenForUserUpdates()
-      .subscribe((user) => {
-        this.zone.run(() => {
-          this.messages.update((current) =>
-            current.map((msg) =>
-              msg.userId === user.id
-                ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
-                : msg,
-            ),
-          );
+    this.backendCommunicator.listenForUserUpdates().subscribe((user) => {
+      this.zone.run(() => {
+        this.messages.update((current) =>
+          current.map((msg) =>
+            msg.userId === user.id
+              ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
+              : msg,
+          ),
+        );
 
-          this.participants.update((current) =>
-            current.map((p) =>
-              p.id === user.id
-                ? { ...p, avatarColor: user.avatarColor, username: user.username }
-                : p,
-            ),
-          );
-        });
+        this.participants.update((current) =>
+          current.map((p) =>
+            p.id === user.id ? { ...p, avatarColor: user.avatarColor, username: user.username } : p,
+          ),
+        );
       });
+    });
   }
 
   /**
@@ -203,8 +199,9 @@ export class ChatService {
   }
 
   getChat(chatId: string): Observable<Chat> {
-    return this.backendCommunicator.getChat(chatId);
-  }
+  return this.backendCommunicator.getChat(chatId).pipe(map((r) => r.chat));
+}
+
 
   /**
    * Clears the list of chats and resets the active chat and messages.
@@ -223,9 +220,7 @@ export class ChatService {
    * @returns An Observable of the list of users.
    */
   getAllUsers(): Observable<User[]> {
-    return this.backendCommunicator
-      .getAllUsers()
-      .pipe(map((r) => r.users));
+    return this.backendCommunicator.getAllUsers().pipe(map((r) => r.users));
   }
 
   /**
