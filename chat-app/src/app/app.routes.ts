@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
-import { chatResolver } from './shared/resolvers/chat-resolver';
+import { chatResolver } from './features/chat/resolvers/chat-resolver';
 
 export const routes: Routes = [
   {

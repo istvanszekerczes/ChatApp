@@ -1,7 +1,7 @@
 import {ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot, Router} from '@angular/router';
-import { Chat } from '../../features/chat/models/chat';
+import { Chat } from '../models/chat';
 import { inject } from '@angular/core';
-import { ChatService } from '../../features/chat/services/chat-service';
+import { ChatService } from '../services/chat-service';
 import { catchError, of } from 'rxjs';
 
 export const chatResolver: ResolveFn<Chat | null> = (
