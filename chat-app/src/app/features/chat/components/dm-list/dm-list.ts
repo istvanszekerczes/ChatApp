@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ChatService } from '../../services/chat-service';
 import { Chat } from '../../models/chat';
 import { ChatItem } from '../chat-item/chat-item';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dm-list',
@@ -14,7 +15,7 @@ import { ChatItem } from '../chat-item/chat-item';
 export class DmList {
   
   private chatService = inject(ChatService);
-
+  private router = inject(Router);
   readonly loading = this.chatService.loading;
   readonly activeChat = this.chatService.activeChat;
 
@@ -30,7 +31,8 @@ export class DmList {
   });
 
   selectChat(chat: Chat) {
-    this.chatService.selectChat(chat);
+    //this.chatService.selectChat(chat);
+    this.router.navigate(['/chat', chat.id]);
   }
 
   clearSearch() {
