@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ChatService } from '../../services/chat-service';
 import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
 import { Chat } from '../../models/chat';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-join-chat-dialog',
@@ -16,6 +17,7 @@ export class JoinChatDialog {
   private chatService = inject(ChatService);
   private dialogRef = inject(MatDialogRef<JoinChatDialog, boolean>);
   readonly chat = inject<Chat>(MAT_DIALOG_DATA);
+  private router = inject(Router);
 
   password = '';
   submitting = signal(false);
@@ -23,6 +25,7 @@ export class JoinChatDialog {
 
   close() {
     this.dialogRef.close(false);
+    this.router.navigate([''])
   }
 
   submit() {

@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
 import { chatResolver } from './features/chat/resolvers/chat-resolver';
+import { chatGuard } from './features/chat/guards/chat-guard';
 
 export const routes: Routes = [
   {
@@ -10,10 +11,15 @@ export const routes: Routes = [
   },
   {
     path: 'chat/:id',
-    canActivate: [authGuard],
+    canActivate: [authGuard, chatGuard],
     resolve: {
       chat: chatResolver,
     },
+    loadComponent: () => import('../app/features/chat/pages/home/home').then((m) => m.Home),
+  },
+  {
+    path: 'error',
+    canActivate: [authGuard],
     loadComponent: () => import('../app/features/chat/pages/home/home').then((m) => m.Home),
   },
   {
