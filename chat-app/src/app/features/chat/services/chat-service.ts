@@ -5,6 +5,9 @@ import { User } from '../../users/models/user';
 import { SocketService } from '../../../core/services/socket-service';
 import { Message } from '../models/message';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
+import { Router } from '@angular/router';
+import { JoinChatDialog } from '../components/join-chat-dialog/join-chat-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 @Service()
 export class ChatService {
@@ -14,6 +17,7 @@ export class ChatService {
   readonly loading = signal(false);
   private userListenerBound = false;
   private backendCommunicator = inject(BackendCommunicator);
+  private dialog = inject(MatDialog);
 
   private listening = false;
 
@@ -26,6 +30,7 @@ export class ChatService {
   readonly participantsLoading = signal(false);
 
   private chatEventsBound = false;
+  private router = inject(Router);
 
   private pendingDirectChats = new Set<string>();
   /**
@@ -37,23 +42,46 @@ export class ChatService {
    * If a different chat is selected, it leaves the previous chat and joins the new one.
    */
   selectChat(chat: Chat) {
-    if (this.activeChat()?.id === chat.id) return;
+  if (this.activeChat()?.id === chat.id) return;
 
-    const previousChatId = this.activeChat()?.id;
-    if (previousChatId) {
-      this.socketService.emit('leave_chat', previousChatId);
-    }
+  if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
+    this.dialog
+      .open(JoinChatDialog, {
+        panelClass: 'chat-dialog-panel',
+        data: chat,
+      })
+      .afterClosed()
+      .subscribe((joined) => {
+        if (!joined) return;
 
-    this.activeChat.set(chat);
-    this.messages.set([]);
-    this.participants.set([]);
-    this.listenForMessages();
-    this.socketService.emit('join_chat', chat.id);
-    this.loadMessages(chat.id);
-    if (chat.type !== 'PUBLIC_GROUP') {
-      this.loadParticipants(chat.id);
-    }
+        const updated = this.chats().find((c) => c.id === chat.id);
+        if (updated) {
+          this.enterChat(updated);
+        }
+      });
+    return;
   }
+
+  this.enterChat(chat);
+}
+
+private enterChat(chat: Chat) {
+  const previousChatId = this.activeChat()?.id;
+  if (previousChatId) {
+    this.socketService.emit('leave_chat', previousChatId);
+  }
+
+  this.activeChat.set(chat);
+  this.messages.set([]);
+  this.participants.set([]);
+
+  this.listenForMessages();
+  this.socketService.emit('join_chat', chat.id);
+  this.loadMessages(chat.id);
+  if (chat.type !== 'PUBLIC_GROUP') {
+    this.loadParticipants(chat.id);
+  }
+}
 
   /**
    * Sends a message in the currently selected chat.
@@ -154,27 +182,23 @@ export class ChatService {
     if (this.userListenerBound) return;
     this.userListenerBound = true;
 
-    this.backendCommunicator
-      .listenForUserUpdates()
-      .subscribe((user) => {
-        this.zone.run(() => {
-          this.messages.update((current) =>
-            current.map((msg) =>
-              msg.userId === user.id
-                ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
-                : msg,
-            ),
-          );
+    this.backendCommunicator.listenForUserUpdates().subscribe((user) => {
+      this.zone.run(() => {
+        this.messages.update((current) =>
+          current.map((msg) =>
+            msg.userId === user.id
+              ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
+              : msg,
+          ),
+        );
 
-          this.participants.update((current) =>
-            current.map((p) =>
-              p.id === user.id
-                ? { ...p, avatarColor: user.avatarColor, username: user.username }
-                : p,
-            ),
-          );
-        });
+        this.participants.update((current) =>
+          current.map((p) =>
+            p.id === user.id ? { ...p, avatarColor: user.avatarColor, username: user.username } : p,
+          ),
+        );
       });
+    });
   }
 
   /**
@@ -199,6 +223,11 @@ export class ChatService {
       });
   }
 
+  getChat(chatId: string): Observable<Chat> {
+  return this.backendCommunicator.getChat(chatId).pipe(map((r) => r.chat));
+}
+
+
   /**
    * Clears the list of chats and resets the active chat and messages.
    *
@@ -216,9 +245,7 @@ export class ChatService {
    * @returns An Observable of the list of users.
    */
   getAllUsers(): Observable<User[]> {
-    return this.backendCommunicator
-      .getAllUsers()
-      .pipe(map((r) => r.users));
+    return this.backendCommunicator.getAllUsers().pipe(map((r) => r.users));
   }
 
   /**
@@ -256,7 +283,7 @@ export class ChatService {
   openDirectChat(targetId: string) {
     const existing = this.chats().find((c) => c.type === 'DIRECT' && c.otherUserId === targetId);
     if (existing) {
-      this.selectChat(existing);
+      this.router.navigate(['/chat', existing.id]);
       return;
     }
 
@@ -266,7 +293,7 @@ export class ChatService {
     this.createDirectChat(targetId).subscribe({
       next: (chat) => {
         this.pendingDirectChats.delete(targetId);
-        this.selectChat(chat);
+        this.router.navigate(['/chat', chat.id]);
       },
       error: (err) => {
         this.pendingDirectChats.delete(targetId);

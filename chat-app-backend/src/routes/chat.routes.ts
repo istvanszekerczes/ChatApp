@@ -84,6 +84,83 @@ router.get(
 );
 
 /**
+ * GET /api/chats/id
+ * List one chat the user navigates to with URL.
+ * 
+ */
+
+router.get(
+  "/:id",
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = req.user!.id;
+    const chatId = req.params.id as string;
+
+    try {
+      const chat = await prisma.chat.findFirst({
+        where: {
+          id: chatId,
+          OR: [
+            { type: { in: [ChatType.PUBLIC_GROUP, ChatType.PROTECTED_GROUP] } },
+            {
+              type: { in: [ChatType.PRIVATE_GROUP, ChatType.DIRECT] },
+              participants: { some: { userId } },
+            },
+          ],
+        },
+        select: {
+          id: true,
+          type: true,
+          name: true,
+          creatorId: true,
+          avatarColor: true,
+          createdAt: true,
+          participants: {
+            select: {
+              userId: true,
+              user: { select: { id: true, username: true, avatarColor: true } },
+            },
+          },
+          _count: { select: { participants: true } },
+        },
+      });
+
+      if (!chat) {
+        res.status(404).json({ error: "Chat not found." });
+        return;
+      }
+
+      const { participants, _count, ...chatData } = chat;
+      const isMember = participants.some((p) => p.userId === userId);
+
+      if (chatData.type === ChatType.DIRECT) {
+        const other = participants.find((p) => p.userId !== userId)?.user;
+        res.json({
+          chat: {
+            ...chatData,
+            name: other?.username ?? "Unknown user",
+            avatarColor: other?.avatarColor ?? null,
+            otherUserId: other?.id ?? null,
+            isMember,
+            participantCount: _count.participants,
+          },
+        });
+        return;
+      }
+
+      res.json({
+        chat: { ...chatData, isMember, participantCount: _count.participants },
+      });
+    } catch (error) {
+      console.error("Failed to load chat:", error);
+      res.status(500).json({ error: "Could not load chat." });
+    }
+  },
+);
+    
+
+
+/**
  * POST /api/chats
  * Create a new chat. Only group chats can be created via this endpoint.
  */
