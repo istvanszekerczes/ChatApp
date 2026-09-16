@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { signalStore, withMethods, withState, patchState } from '@ngrx/signals';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import { Chat } from '../../features/chat/models/chat';
 import { User } from '../../features/users/models/user';
 import { Message } from '../../features/chat/models/message';
@@ -27,9 +27,33 @@ export const ChatStore = signalStore(
   withState(initialState),
   withMethods((store, backendCommunicator = inject(BackendCommunicator)) => ({
     async loadChats(): Promise<void> {
-      patchState(store, { isLoading: true });
-      const { chats } = await firstValueFrom(backendCommunicator.loadChats());
-      patchState(store, { chats, isLoading: false });
+      backendCommunicator
+        .loadChats()
+        .pipe(map((r) => r.chats))
+        .subscribe({
+          next: (chats) => patchState(store, { chats, isLoading: false }),
+          error: (err) => {
+            console.error('Failed to load chats', err);
+            patchState(store, { isLoading: false });
+          },
+        });
+    },
+
+    async loadMessages(chatId: string): Promise<void> {
+      backendCommunicator
+        .loadMessages(chatId)
+        .pipe(map((r) => r.messages))
+        .subscribe({
+          next: (messages) => patchState(store, { messages, isLoading: false }),
+          error: (err) => {
+            console.log('Failed to load messages', err);
+            patchState(store, { isLoading: false });
+          },
+        });
+    },
+
+    async clearChats(): Promise<void> {
+      
     },
 
     async loadUsers(): Promise<void> {
@@ -38,16 +62,11 @@ export const ChatStore = signalStore(
       patchState(store, { users, isLoading: false });
     },
 
-    async loadMessages(chatId: string): Promise<void> {
-      patchState(store, { isLoading: true });
-      const { messages } = await firstValueFrom(backendCommunicator.loadMessages(chatId));
-      patchState(store, { messages, isLoading: false });
-    },
-
     async loadParticipants(chatId: string): Promise<void> {
       patchState(store, { isLoading: true });
       const { participants } = await firstValueFrom(backendCommunicator.loadParticipants(chatId));
       patchState(store, { participants, isLoading: false });
     },
+    
   })),
 );

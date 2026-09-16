@@ -1,4 +1,4 @@
-import { Service, NgZone, inject, signal } from '@angular/core';
+import { Service, NgZone, inject, signal, computed } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { Chat, CreateChatPayload } from '../models/chat';
 import { User } from '../../users/models/user';
@@ -8,13 +8,14 @@ import { BackendCommunicator } from '../../../core/services/backend-communicator
 import { Router } from '@angular/router';
 import { JoinChatDialog } from '../components/join-chat-dialog/join-chat-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { ChatStore } from '../../../core/store/chat-store';
 
 @Service()
 export class ChatService {
   private socketService = inject(SocketService);
   private zone = inject(NgZone);
-  readonly chats = signal<Chat[]>([]);
-  readonly loading = signal(false);
+  readonly chats = computed(() => this.store.chats());
+  readonly loading = computed(() => this.store.isLoading());
   private userListenerBound = false;
   private backendCommunicator = inject(BackendCommunicator);
   private dialog = inject(MatDialog);
@@ -22,17 +23,18 @@ export class ChatService {
   private listening = false;
 
   readonly activeChat = signal<Chat | null>(null);
-  readonly messages = signal<Message[]>([]);
-  readonly messagesLoading = signal(false);
+  readonly messages = computed(() => this.store.messages());
+  readonly messagesLoading = computed(() => this.store.isLoading());
 
   private messageListenerBound = false;
-  readonly participants = signal<User[]>([]);
-  readonly participantsLoading = signal(false);
+  readonly participants = computed(() => this.store.participants());
+  readonly participantsLoading = computed(() => this.store.isLoading());
 
   private chatEventsBound = false;
   private router = inject(Router);
 
   private pendingDirectChats = new Set<string>();
+  private store = inject(ChatStore);
   /**
    * Selects a chat to view its messages and participants.
    *
@@ -42,46 +44,46 @@ export class ChatService {
    * If a different chat is selected, it leaves the previous chat and joins the new one.
    */
   selectChat(chat: Chat) {
-  if (this.activeChat()?.id === chat.id) return;
+    if (this.activeChat()?.id === chat.id) return;
 
-  if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
-    this.dialog
-      .open(JoinChatDialog, {
-        panelClass: 'chat-dialog-panel',
-        data: chat,
-      })
-      .afterClosed()
-      .subscribe((joined) => {
-        if (!joined) return;
+    if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
+      this.dialog
+        .open(JoinChatDialog, {
+          panelClass: 'chat-dialog-panel',
+          data: chat,
+        })
+        .afterClosed()
+        .subscribe((joined) => {
+          if (!joined) return;
 
-        const updated = this.chats().find((c) => c.id === chat.id);
-        if (updated) {
-          this.enterChat(updated);
-        }
-      });
-    return;
+          const updated = this.chats().find((c) => c.id === chat.id);
+          if (updated) {
+            this.enterChat(updated);
+          }
+        });
+      return;
+    }
+
+    this.enterChat(chat);
   }
 
-  this.enterChat(chat);
-}
+  private enterChat(chat: Chat) {
+    const previousChatId = this.activeChat()?.id;
+    if (previousChatId) {
+      this.socketService.emit('leave_chat', previousChatId);
+    }
 
-private enterChat(chat: Chat) {
-  const previousChatId = this.activeChat()?.id;
-  if (previousChatId) {
-    this.socketService.emit('leave_chat', previousChatId);
+    this.activeChat.set(chat);
+    this.store.loadMessages(chat.id)
+    this.store.loadParticipants(chat.id)
+
+    this.listenForMessages();
+    this.socketService.emit('join_chat', chat.id);
+    this.loadMessages(chat.id);
+    if (chat.type !== 'PUBLIC_GROUP') {
+      this.loadParticipants(chat.id);
+    }
   }
-
-  this.activeChat.set(chat);
-  this.messages.set([]);
-  this.participants.set([]);
-
-  this.listenForMessages();
-  this.socketService.emit('join_chat', chat.id);
-  this.loadMessages(chat.id);
-  if (chat.type !== 'PUBLIC_GROUP') {
-    this.loadParticipants(chat.id);
-  }
-}
 
   /**
    * Sends a message in the currently selected chat.
@@ -103,21 +105,7 @@ private enterChat(chat: Chat) {
    */
 
   private loadMessages(chatId: string) {
-    this.messagesLoading.set(true);
-    this.backendCommunicator
-      .loadMessages(chatId)
-      .pipe(map((r) => r.messages))
-      .subscribe({
-        next: (messages) => {
-          if (this.activeChat()?.id !== chatId) return;
-          this.messages.set(messages);
-          this.messagesLoading.set(false);
-        },
-        error: (err) => {
-          console.error('Failed to load messages', err);
-          this.messagesLoading.set(false);
-        },
-      });
+    this.store.loadMessages(chatId);
   }
 
   /**
@@ -128,15 +116,8 @@ private enterChat(chat: Chat) {
   private listenForMessages() {
     if (this.messageListenerBound) return;
     this.messageListenerBound = true;
-
-    this.backendCommunicator.listenForMessages().subscribe((msg) => {
-      if (msg.chatId !== this.activeChat()?.id) return;
-      this.zone.run(() => {
-        this.messages.update((current) =>
-          current.some((m) => m.id === msg.id) ? current : [...current, msg],
-        );
-      });
-    });
+    
+    
   }
 
   /**
@@ -207,26 +188,12 @@ private enterChat(chat: Chat) {
    * @returns void
    */
   loadChats() {
-    this.loading.set(true);
-    this.backendCommunicator
-      .loadChats()
-      .pipe(map((r) => r.chats))
-      .subscribe({
-        next: (chats) => {
-          this.chats.set(chats);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          console.error('Failed to load chats', err);
-          this.loading.set(false);
-        },
-      });
+    this.store.loadChats();
   }
 
   getChat(chatId: string): Observable<Chat> {
-  return this.backendCommunicator.getChat(chatId).pipe(map((r) => r.chat));
-}
-
+    return this.backendCommunicator.getChat(chatId).pipe(map((r) => r.chat));
+  }
 
   /**
    * Clears the list of chats and resets the active chat and messages.
