@@ -17,7 +17,7 @@ export class DmList {
   private chatService = inject(ChatService);
   private router = inject(Router);
   readonly loading = this.chatService.loading;
-  readonly activeChat = this.chatService.activeChat;
+  readonly activeChat = this.chatService.activeChatId;
 
   searchTerm = signal('');
 

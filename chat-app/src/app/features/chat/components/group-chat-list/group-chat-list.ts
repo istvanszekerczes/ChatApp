@@ -16,7 +16,7 @@ export class GroupChatList {
   private chatService = inject(ChatService);
 
   readonly loading = this.chatService.loading;
-  readonly activeChat = this.chatService.activeChat;
+  readonly activeChat = this.chatService.activeChatId;
   private router = inject(Router);
   activeFilter = signal<ChatType>('PUBLIC_GROUP');
   searchTerm = signal('');
@@ -54,7 +54,7 @@ export class GroupChatList {
   }
 
   private closeIfHidden() {
-    const active = this.chatService.activeChat();
+    const active = this.chatService.activeChatId();
     if (active && !this.visibleChats().some((c) => c.id === active.id)) {
       this.chatService.closeActiveChat();
     }
