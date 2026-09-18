@@ -12,7 +12,6 @@ import { ChatStore } from '../store/chat-store';
 @Service()
 export class ChatService {
   private socketService = inject(SocketService);
-  private zone = inject(NgZone);
   readonly chats = computed(() => this.store.chats());
   readonly loading = computed(() => this.store.chatsLoading());
   private userListenerBound = false;
@@ -22,12 +21,13 @@ export class ChatService {
   private listening = false;
 
   readonly activeChatId = computed(() => this.store.activeChatId());
+  readonly activeChat = computed(() => this.store.activeChat());
   readonly messages = computed(() => this.store.messages());
   readonly messagesLoading = computed(() => this.store.messagesLoading());
 
   private messageListenerBound = false;
   readonly participants = computed(() => this.store.participants());
-  readonly participantsLoading = computed(() => this.store.messagesLoading());
+  readonly participantsLoading = computed(() => this.store.participantsLoading());
 
   private chatEventsBound = false;
   private router = inject(Router);
@@ -74,13 +74,13 @@ export class ChatService {
 
     this.store.selectChat(chat);
     this.store.loadMessages(chat.id);
-    this.store.loadParticipants(chat.id);
+
+    if (chat.type !== 'PUBLIC_GROUP') {
+      this.store.loadParticipants(chat.id);
+    }
 
     this.listenForMessages();
     this.socketService.emit('join_chat', chat.id);
-    if (chat.type !== 'PUBLIC_GROUP') {
-      this.loadParticipants(chat.id);
-    }
   }
 
   /**
@@ -94,7 +94,6 @@ export class ChatService {
     if (!chat || !content.trim()) return;
     this.backendCommunicator.sendMessage(this.activeChatId(), content.trim());
   }
-
   /**
    * Listens for incoming messages in the currently selected chat.
    *
@@ -103,6 +102,8 @@ export class ChatService {
   private listenForMessages() {
     if (this.messageListenerBound) return;
     this.messageListenerBound = true;
+
+    this.store.listenForMessages();
   }
 
   /**
@@ -121,10 +122,7 @@ export class ChatService {
     if (this.listening) return;
     this.listening = true;
 
-    this.backendCommunicator.listenForNewChats().subscribe((chat) => {
-      console.log('[socket] chat_created', chat);
-      this.zone.run(() => this.upsert(chat));
-    });
+    this.store.listenForNewChats();
   }
 
   /**
@@ -285,44 +283,10 @@ export class ChatService {
     if (this.chatEventsBound) return;
     this.chatEventsBound = true;
 
-    this.backendCommunicator.listenForParticipantsChanged().subscribe(({ chatId }) => {
-      this.zone.run(() => {
-        if (this.activeChatId() === chatId) {
-          this.store.loadParticipants(chatId);
-        }
-        this.store.refreshChatCount(chatId);
-      });
-    });
-
-    this.backendCommunicator.listenForChatDeleted().subscribe(({ chatId }) => {
-      this.zone.run(() => {
-        this.chats.update((c) => c.filter((chat) => chat.id !== chatId));
-        if (this.activeChatId()?.id === chatId) this.closeActiveChat();
-      });
-    });
-
-    this.backendCommunicator.listenForRemovedFromChat().subscribe(({ chatId }) => {
-      this.zone.run(() => {
-        this.chats.update((current) =>
-          current.flatMap((chat) => {
-            if (chat.id !== chatId) return [chat];
-            if (chat.type === 'PRIVATE_GROUP') return [];
-            return [
-              {
-                ...chat,
-                isMember: false,
-                participantCount: Math.max(0, chat.participantCount - 1),
-              },
-            ];
-          }),
-        );
-        if (this.activeChatId()?.id === chatId) this.closeActiveChat();
-      });
-    });
-
-    this.backendCommunicator.listenForAddedToChat().subscribe(() => {
-      this.zone.run(() => this.loadChats());
-    });
+    this.store.listenForParticipantsChanged();
+    this.store.listenForChatDeleted();
+    this.store.listenForRemovedFromChat();
+    this.store.listenForAddedToChat();
   }
 
   /**
@@ -331,10 +295,6 @@ export class ChatService {
    * @returns void
    */
   closeActiveChat() {
-    const chatId = this.activeChatId();
-    if (chatId !== '') {
-      this.socketService.emit('leave_chat', chatId);
-    }
     this.store.closeActiveChat();
   }
 

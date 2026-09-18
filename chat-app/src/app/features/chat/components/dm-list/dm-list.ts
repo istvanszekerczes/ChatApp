@@ -17,7 +17,7 @@ export class DmList {
   private chatService = inject(ChatService);
   private router = inject(Router);
   readonly loading = this.chatService.loading;
-  readonly activeChat = this.chatService.activeChatId;
+  readonly activeChat = this.chatService.activeChat;
 
   searchTerm = signal('');
 
@@ -31,7 +31,6 @@ export class DmList {
   });
 
   selectChat(chat: Chat) {
-    //this.chatService.selectChat(chat);
     this.router.navigate(['/chat', chat.id]);
   }
 
