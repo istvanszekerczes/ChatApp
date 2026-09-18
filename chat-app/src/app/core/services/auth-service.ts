@@ -1,13 +1,16 @@
-import { Service, inject } from '@angular/core';
-import { Observable, BehaviorSubject, map, catchError, of, tap } from 'rxjs';
+import { Service, computed, inject } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { User } from '../../features/users/models/user';
 import { BackendCommunicator } from './backend-communicator';
+import { UserStore } from '../../features/users/store/user-store';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Service()
 export class AuthService {
+  private store = inject(UserStore);
   private backendCommunicator = inject(BackendCommunicator);
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  readonly currentUser$ = this.currentUserSubject.asObservable();
+  private currentUser = computed(() => this.store.currentUser());
+  readonly currentUser$ = toObservable(this.currentUser);
 
   readonly avatarColors = ['#3b82f6', '#ef4444', '#22c55e', '#a855f7', '#f59e0b', '#ec4899'];
 
@@ -31,7 +34,7 @@ export class AuthService {
   login(credentials: { email: string; password: string }) {
     return this.backendCommunicator
       .login(credentials)
-      .pipe(tap((response) => this.currentUserSubject.next(response.user)));
+      .pipe(tap((response) => this.store.saveLogedInUser(response.user)));
   }
 
   /**
@@ -40,7 +43,7 @@ export class AuthService {
    * @returns An Observable indicating the success or failure of the logout operation.
    */
   logout(): Observable<unknown> {
-    return this.backendCommunicator.logout().pipe(tap(() => this.currentUserSubject.next(null)));
+    return this.backendCommunicator.logout().pipe(tap(() => this.store.logoutUser()));
   }
 
   /**
@@ -49,16 +52,7 @@ export class AuthService {
    * @returns An Observable of the current user or null if not authenticated.
    */
   loadCurrentUser(): Observable<User | null> {
-    return this.backendCommunicator
-    .loadCurrentUser()
-    .pipe(
-      map((response) => response.user),
-      tap((user) => this.currentUserSubject.next(user)),
-      catchError(() => {
-        this.currentUserSubject.next(null);
-        return of(null);
-      }),
-    );
+    return this.store.loadCurrentUser();
   }
 
   /**
@@ -68,11 +62,6 @@ export class AuthService {
    * @returns An Observable of the updated user.
    */
   updateAvatarColor(avatarColor: string): Observable<User> {
-    return this.backendCommunicator
-      .updateAvatarColor(avatarColor)
-      .pipe(
-        map((response) => response.user),
-        tap((user) => this.currentUserSubject.next(user)),
-      );
+    return this.store.updateAvatarColor(avatarColor);
   }
 }
