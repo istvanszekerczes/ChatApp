@@ -21,7 +21,7 @@ export class ChatInfo {
   private authService = inject(AuthService);
   private userService = inject(UserService);
 
-  readonly activeChat = this.chatService.activeChatId;
+  readonly activeChat = this.chatService.activeChat;
   readonly participants = this.chatService.participants;
   readonly loading = this.chatService.participantsLoading;
   private dialog = inject(MatDialog);
