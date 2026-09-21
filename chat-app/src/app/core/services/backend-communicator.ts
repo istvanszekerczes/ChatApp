@@ -45,6 +45,14 @@ export class BackendCommunicator {
     });
   }
 
+  public leaveChat(chatId: string) {
+    this.socketService.emit('leave_chat', chatId);
+    }
+
+  public joinChatRoom(chatId: string) {
+    this.socketService.emit('join_chat', chatId);
+  }
+
   public createChat(payload: CreateChatPayload) {
     return this.http.post<{ chat: Chat }>(`${this.apiUrl}/chats`, payload, {
       withCredentials: true,
@@ -112,8 +120,10 @@ export class BackendCommunicator {
   }
 
   public getChat(chatId: string) {
-  return this.http.get<{ chat: Chat }>(`${this.apiUrl}/chats/${chatId}`, { withCredentials: true });
-}
+    return this.http.get<{ chat: Chat }>(`${this.apiUrl}/chats/${chatId}`, {
+      withCredentials: true,
+    });
+  }
 
   //       ---   User related communications   ---
 
@@ -146,7 +156,6 @@ export class BackendCommunicator {
   public listenForPresence() {
     return this.socketService.on<PresenceEvent>('presence_changed');
   }
-
 
   //       ---   Auth related communications   ---
 

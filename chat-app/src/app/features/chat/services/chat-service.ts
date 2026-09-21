@@ -2,7 +2,6 @@ import { Service, NgZone, inject, signal } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { Chat, CreateChatPayload } from '../models/chat';
 import { User } from '../../users/models/user';
-import { SocketService } from '../../../core/services/socket-service';
 import { Message } from '../models/message';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { Router } from '@angular/router';
@@ -11,7 +10,6 @@ import { MatDialog } from '@angular/material/dialog';
 
 @Service()
 export class ChatService {
-  private socketService = inject(SocketService);
   private zone = inject(NgZone);
   readonly chats = signal<Chat[]>([]);
   readonly loading = signal(false);
@@ -68,7 +66,7 @@ export class ChatService {
 private enterChat(chat: Chat) {
   const previousChatId = this.activeChat()?.id;
   if (previousChatId) {
-    this.socketService.emit('leave_chat', previousChatId);
+    this.backendCommunicator.leaveChat(previousChatId);
   }
 
   this.activeChat.set(chat);
@@ -76,7 +74,7 @@ private enterChat(chat: Chat) {
   this.participants.set([]);
 
   this.listenForMessages();
-  this.socketService.emit('join_chat', chat.id);
+  this.backendCommunicator.joinChatRoom(chat.id);
   this.loadMessages(chat.id);
   if (chat.type !== 'PUBLIC_GROUP') {
     this.loadParticipants(chat.id);
@@ -424,7 +422,7 @@ private enterChat(chat: Chat) {
   closeActiveChat() {
     const chatId = this.activeChat()?.id;
     if (chatId) {
-      this.socketService.emit('leave_chat', chatId);
+      this.backendCommunicator.leaveChat(chatId);
     }
     this.activeChat.set(null);
     this.messages.set([]);
