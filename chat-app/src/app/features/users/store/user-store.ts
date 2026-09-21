@@ -89,7 +89,7 @@ export const UserStore = signalStore(
       patchState(store, initialState);
     },
 
-    saveLogedInUser(user: User) {
+    saveLoggedInUser(user: User) {
       patchState(store, { currentUser: user });
     },
 

@@ -34,7 +34,7 @@ export class AuthService {
   login(credentials: { email: string; password: string }) {
     return this.backendCommunicator
       .login(credentials)
-      .pipe(tap((response) => this.store.saveLogedInUser(response.user)));
+      .pipe(tap((response) => this.store.saveLoggedInUser(response.user)));
   }
 
   /**
