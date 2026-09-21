@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { signalStore, withMethods, withState, patchState } from '@ngrx/signals';
+import { signalStore, withMethods, withState, patchState, withProps } from '@ngrx/signals';
 import { User } from '../../users/models/user';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
@@ -21,7 +21,10 @@ export const UserStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
   withDevtools('users'),
-  withMethods((store, backendCommunicator = inject(BackendCommunicator)) => ({
+  withProps(() => ({
+    backendCommunicator: inject(BackendCommunicator)
+  })),
+  withMethods(({ backendCommunicator, ...store }) => ({
     loadUsers() {
       patchState(store, { usersLoading: true });
       backendCommunicator
