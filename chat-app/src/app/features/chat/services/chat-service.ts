@@ -406,6 +406,7 @@ private enterChat(chat: Chat) {
           }),
         );
         if (this.activeChat()?.id === chatId) this.closeActiveChat();
+        this.router.navigate(['']);
       });
     });
 

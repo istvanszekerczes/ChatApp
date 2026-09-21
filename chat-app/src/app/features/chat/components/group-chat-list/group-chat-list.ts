@@ -49,6 +49,7 @@ export class GroupChatList {
   }
 
   selectChat(chat: Chat) {
+    this.chatService.closeActiveChat();
     this.router.navigate(['/chat', chat.id]);
   }
 

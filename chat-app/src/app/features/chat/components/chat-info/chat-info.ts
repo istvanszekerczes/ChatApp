@@ -8,6 +8,7 @@ import { User } from '../../../users/models/user';
 import { MatDialog } from '@angular/material/dialog';
 import { AddMembersDialog } from '../add-members-dialog/add-members-dialog';
 import { UserService } from '../../../users/services/user-service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-chat-info',
@@ -19,7 +20,7 @@ export class ChatInfo {
   private chatService = inject(ChatService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
-
+  private router = inject(Router);
   readonly activeChat = this.chatService.activeChat;
   readonly participants = this.chatService.participants;
   readonly loading = this.chatService.participantsLoading;
@@ -69,6 +70,7 @@ export class ChatInfo {
     this.chatService.removeParticipant(chat.id, me.id).subscribe({
       error: err => console.error('Failed to leave group', err),
     });
+    this.router.navigate(['']);
   }
 
   /**
