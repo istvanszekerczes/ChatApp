@@ -1,4 +1,4 @@
-import { Component, signal, inject, computed, effect } from '@angular/core';
+import { Component, signal, inject, computed, effect, untracked, Type, Signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
@@ -51,7 +51,7 @@ export class Home {
   constructor() {
     effect(() => {
       const chat = this.chat();
-      if (chat) this.chatService.selectChat(chat);
+      if (chat) untracked(() => this.chatService.selectChat(chat));
     });
   }
 
