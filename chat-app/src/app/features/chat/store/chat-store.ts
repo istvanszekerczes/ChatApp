@@ -7,12 +7,14 @@ import {
   withComputed,
   withProps,
 } from '@ngrx/signals';
-import { Observable, map, tap, pipe } from 'rxjs';
+import { Observable, map, tap, pipe, switchMap, toArray } from 'rxjs';
 import { Chat } from '../models/chat';
-import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { RxMethod, rxMethod } from '@ngrx/signals/rxjs-interop';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { SocketService } from '../../../core/services/socket-service';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
+import { tapResponse } from '@ngrx/operators';
+import { User } from '../../users/models/user';
 
 type ChatState = {
   activeChatId: string;
@@ -43,92 +45,116 @@ export const ChatStore = signalStore(
       patchState(store, { activeChatId: chat.id });
     },
 
-    loadChats() {
-      patchState(store, { chatsLoading: true });
-      backendCommunicator
-        .loadChats()
-        .pipe(map((r) => r.chats))
-        .subscribe({
-          next: (chats) => patchState(store, { chats, chatsLoading: false }),
-          error: () => patchState(store, { chatsLoading: false }),
-        });
-    },
-
-    loadMessages(chatId: string) {
-      patchState(store, (state) => ({
-        chats: state.chats.map((chat) =>
-          chat.id === chatId ? { ...chat, messagesLoading: true } : chat,
+    loadChats: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { chatsLoading: true })),
+        switchMap(() =>
+          backendCommunicator.loadChats().pipe(
+            tapResponse({
+              next: (res) => patchState(store, { chats: res.chats, chatsLoading: false }),
+              error: () => patchState(store, { chatsLoading: false }),
+            }),
+          ),
         ),
-      }));
-      backendCommunicator
-        .loadMessages(chatId)
-        .pipe(map((r) => r.messages))
-        .subscribe({
-          next: (messages) => {
-            if (store.activeChatId() !== chatId) return;
-            patchState(store, (state) => ({
-              chats: state.chats.map((chat) =>
-                chat.id === chatId ? { ...chat, messages, messagesLoading: false } : chat,
-              ),
-            }));
-          },
-          error: (err) => {
-            console.log('Failed to load messages', err);
-            if (store.activeChatId() !== chatId) return;
-            patchState(store, (state) => ({
-              chats: state.chats.map((chat) =>
-                chat.id === chatId ? { ...chat, messagesLoading: false } : chat,
-              ),
-            }));
-          },
-        });
-    },
+      ),
+    ),
 
-    loadParticipants(chatId: string) {
-      patchState(store, (state) => ({
-        chats: state.chats.map((chat) =>
-          chat.id === chatId ? { ...chat, particapantsLoading: true } : chat,
+    loadMessages: rxMethod<string>(
+      pipe(
+        tap((chatId) =>
+          patchState(store, (state) => ({
+            chats: state.chats.map((chat) =>
+              chat.id === chatId ? { ...chat, messagesLoading: true } : chat,
+            ),
+          })),
         ),
-      }));
-      backendCommunicator
-        .loadParticipants(chatId)
-        .pipe(map((r) => r.participants))
-        .subscribe({
-          next: (participants) => {
-            if (store.activeChatId() !== chatId) return;
-            patchState(store, (state) => ({
-              chats: state.chats.map((chat) =>
-                chat.id === chatId ? { ...chat, participants, particapantsLoading: false } : chat,
-              ),
-            }));
-          },
-          error: (err) => {
-            console.log('Failed to load participants', err);
-            patchState(store, (state) => ({
-              chats: state.chats.map((chat) =>
-                chat.id === chatId ? { ...chat, particapantsLoading: false } : chat,
-              ),
-            }));
-          },
-        });
-    },
+        switchMap((chatId) =>
+          backendCommunicator.loadMessages(chatId).pipe(
+            tapResponse({
+              next: (res) => {
+                if (store.activeChatId() !== chatId) return;
+                patchState(store, (state) => ({
+                  chats: state.chats.map((chat) =>
+                    chat.id === chatId
+                      ? { ...chat, messages: res.messages, messagesLoading: false }
+                      : chat,
+                  ),
+                }));
+              },
+              error: () => {
+                if (store.activeChatId() !== chatId) return;
+                patchState(store, (state) => ({
+                  chats: state.chats.map((chat) =>
+                    chat.id === chatId ? { ...chat, messagesLoading: false } : chat,
+                  ),
+                }));
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
 
-    refreshChatCount(chatId: string) {
-      backendCommunicator
-        .refreshChatCount(chatId)
-        .pipe(map((r) => r.chats.find((c) => c.id === chatId)))
-        .subscribe((updated) => {
-          if (!updated) return;
+    loadParticipants: rxMethod<string>(
+      pipe(
+        tap((chatId) =>
+          patchState(store, (state) => ({
+            chats: state.chats.map((chat) =>
+              chat.id === chatId ? { ...chat, messagesLoading: true } : chat,
+            ),
+          })),
+        ),
+        switchMap((chatId) =>
+          backendCommunicator.loadParticipants(chatId).pipe(
+            tapResponse({
+              next: (res) => {
+                if (store.activeChatId() !== chatId) return;
+                patchState(store, (state) => ({
+                  chats: state.chats.map((chat) =>
+                    chat.id === chatId
+                      ? { ...chat, participants: res.participants, participantsLoading: false }
+                      : chat,
+                  ),
+                }));
+              },
+              error: () => {
+                if (store.activeChatId() !== chatId) return;
+                patchState(store, (state) => ({
+                  chats: state.chats.map((chat) =>
+                    chat.id === chatId ? { ...chat, participantsLoading: false } : chat,
+                  ),
+                }));
+              },
+            }),
+          ),
+        ),
+      ),
+    ),
 
-          patchState(store, {
-            chats: store.chats().map((c) => (c.id === chatId ? updated : c)),
-          });
+    refreshChatCount: rxMethod<string>(
+      pipe(
+        switchMap((chatId) =>
+          backendCommunicator.refreshChatCount(chatId).pipe(
+            map((r) => ({ chatId, updated: r.chats.find((c) => c.id === chatId) })),
+            tapResponse({
+              next: ({ chatId, updated }) => {
+                if (!updated) return;
 
-          if (store.activeChatId() === chatId) {
-            patchState(store, { activeChatId: chatId });
-          }
-        });
-    },
+                patchState(store, (state) => ({
+                  chats: state.chats.map((c) => (c.id === chatId ? updated : c)),
+                }));
+
+                if (store.activeChatId() === chatId) {
+                  patchState(store, { activeChatId: chatId });
+                }
+              },
+              error: () => {},
+            }),
+          ),
+        ),
+      ),
+    ),
+
 
     upsert(chat: Chat) {
       const current = store.chats();
@@ -167,6 +193,10 @@ export const ChatStore = signalStore(
         }),
       );
     },
+
+    listenForUserUpdates_: rxMethod<User> (
+      
+    ),
 
     listenForUserUpdates() {
       backendCommunicator.listenForUserUpdates().subscribe((user) => {
