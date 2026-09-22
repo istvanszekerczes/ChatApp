@@ -1,3 +1,6 @@
+import { User } from "../../users/models/user";
+import { Message } from "./message";
+
 export type ChatType = 'DIRECT' | 'PUBLIC_GROUP' | 'PRIVATE_GROUP' | 'PROTECTED_GROUP';
 
 /**
@@ -14,6 +17,10 @@ export interface Chat {
   creatorId: string | null;
   isMember: boolean;
   participantCount: number;
+  participants: User[];
+  messages: Message[];
+  messagesLoading: boolean;
+  particapantsLoading: boolean;
 }
 
 /**

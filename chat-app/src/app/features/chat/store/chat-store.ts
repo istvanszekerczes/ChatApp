@@ -7,10 +7,9 @@ import {
   withComputed,
   withProps,
 } from '@ngrx/signals';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, map, tap, pipe } from 'rxjs';
 import { Chat } from '../models/chat';
-import { User } from '../../users/models/user';
-import { Message } from '../models/message';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { SocketService } from '../../../core/services/socket-service';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
@@ -18,21 +17,13 @@ import { withDevtools } from '@angular-architects/ngrx-toolkit';
 type ChatState = {
   activeChatId: string;
   chats: Chat[];
-  messages: Message[];
-  participants: User[];
   chatsLoading: boolean;
-  messagesLoading: boolean;
-  participantsLoading: boolean;
 };
 
 const initialState: ChatState = {
   activeChatId: '',
   chats: [],
-  messages: [],
-  participants: [],
   chatsLoading: false,
-  messagesLoading: false,
-  participantsLoading: false,
 };
 
 export const ChatStore = signalStore(
@@ -64,36 +55,60 @@ export const ChatStore = signalStore(
     },
 
     loadMessages(chatId: string) {
-      patchState(store, { messagesLoading: true });
+      patchState(store, (state) => ({
+        chats: state.chats.map((chat) =>
+          chat.id === chatId ? { ...chat, messagesLoading: true } : chat,
+        ),
+      }));
       backendCommunicator
         .loadMessages(chatId)
         .pipe(map((r) => r.messages))
         .subscribe({
           next: (messages) => {
             if (store.activeChatId() !== chatId) return;
-            patchState(store, { messages, messagesLoading: false });
+            patchState(store, (state) => ({
+              chats: state.chats.map((chat) =>
+                chat.id === chatId ? { ...chat, messages, messagesLoading: false } : chat,
+              ),
+            }));
           },
           error: (err) => {
             console.log('Failed to load messages', err);
             if (store.activeChatId() !== chatId) return;
-            patchState(store, { messagesLoading: false });
+            patchState(store, (state) => ({
+              chats: state.chats.map((chat) =>
+                chat.id === chatId ? { ...chat, messagesLoading: false } : chat,
+              ),
+            }));
           },
         });
     },
 
     loadParticipants(chatId: string) {
-      patchState(store, { participantsLoading: true });
+      patchState(store, (state) => ({
+        chats: state.chats.map((chat) =>
+          chat.id === chatId ? { ...chat, particapantsLoading: true } : chat,
+        ),
+      }));
       backendCommunicator
         .loadParticipants(chatId)
         .pipe(map((r) => r.participants))
         .subscribe({
           next: (participants) => {
             if (store.activeChatId() !== chatId) return;
-            patchState(store, { participants, participantsLoading: false });
+            patchState(store, (state) => ({
+              chats: state.chats.map((chat) =>
+                chat.id === chatId ? { ...chat, participants, particapantsLoading: false } : chat,
+              ),
+            }));
           },
           error: (err) => {
             console.log('Failed to load participants', err);
-            patchState(store, { participantsLoading: false });
+            patchState(store, (state) => ({
+              chats: state.chats.map((chat) =>
+                chat.id === chatId ? { ...chat, particapantsLoading: false } : chat,
+              ),
+            }));
           },
         });
     },
@@ -134,10 +149,6 @@ export const ChatStore = signalStore(
       }
       patchState(store, {
         activeChatId: '',
-        messages: [],
-        participants: [],
-        messagesLoading: false,
-        participantsLoading: false,
       });
     },
 
@@ -159,22 +170,21 @@ export const ChatStore = signalStore(
 
     listenForUserUpdates() {
       backendCommunicator.listenForUserUpdates().subscribe((user) => {
-        patchState(store, {
-          messages: store
-            .messages()
-            .map((msg) =>
+        patchState(store, (state) => ({
+          chats: state.chats.map((chat) => ({
+            ...chat,
+            messages: chat.messages.map((msg) =>
               msg.userId === user.id
                 ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
                 : msg,
             ),
-          participants: store
-            .participants()
-            .map((p) =>
+            participants: chat.participants.map((p) =>
               p.id === user.id
                 ? { ...p, avatarColor: user.avatarColor, username: user.username }
                 : p,
             ),
-        });
+          })),
+        }));
       });
     },
 
@@ -231,11 +241,18 @@ export const ChatStore = signalStore(
     listenForMessages() {
       return backendCommunicator.listenForMessages().subscribe((msg) => {
         if (msg.chatId !== store.activeChatId()) return;
-        patchState(store, {
-          messages: store.messages().some((m) => m.id === msg.id)
-            ? store.messages()
-            : [...store.messages(), msg],
-        });
+        patchState(store, (state) => ({
+          chats: state.chats.map((chat) =>
+            chat.id === msg.chatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.some((m) => m.id === msg.id)
+                    ? chat.messages
+                    : [...chat.messages, msg],
+                }
+              : chat,
+          ),
+        }));
       });
     },
   })),

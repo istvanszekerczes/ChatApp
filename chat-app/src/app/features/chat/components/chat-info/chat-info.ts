@@ -98,7 +98,7 @@ export class ChatInfo {
       autoFocus: false,
       data: {
         chatId: chat.id,
-        existingIds: this.participants().map(p => p.id),
+        existingIds: this.participants()?.map(p => p.id),
       },
     }).afterClosed().subscribe(added => {
       if (added) this.chatService.loadParticipants(chat.id);
