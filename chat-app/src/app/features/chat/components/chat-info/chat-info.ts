@@ -20,6 +20,7 @@ export class ChatInfo {
   private chatService = inject(ChatService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private router = inject(Router);
 
   readonly activeChat = this.chatService.activeChat;
   readonly participants = this.chatService.participants;
