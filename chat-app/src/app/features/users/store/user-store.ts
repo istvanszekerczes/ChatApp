@@ -96,7 +96,7 @@ export const UserStore = signalStore(
       patchState(store, { currentUser: user });
     },
 
-    logoutUser() {
+    resetUser() {
       patchState(store, { currentUser: null });
     },
 

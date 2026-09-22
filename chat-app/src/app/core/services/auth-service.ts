@@ -43,7 +43,7 @@ export class AuthService {
    * @returns An Observable indicating the success or failure of the logout operation.
    */
   logout(): Observable<unknown> {
-    return this.backendCommunicator.logout().pipe(tap(() => this.store.logoutUser()));
+    return this.backendCommunicator.logout().pipe(tap(() => this.store.resetUser()));
   }
 
   /**

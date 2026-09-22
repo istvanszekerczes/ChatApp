@@ -20,7 +20,7 @@ export interface Chat {
   participants: User[];
   messages: Message[];
   messagesLoading: boolean;
-  particapantsLoading: boolean;
+  participantsLoading: boolean;
 }
 
 /**
