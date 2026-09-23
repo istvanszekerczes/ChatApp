@@ -9,12 +9,10 @@ import {
 } from '@ngrx/signals';
 import { Observable, map, tap, pipe, switchMap, toArray } from 'rxjs';
 import { Chat } from '../models/chat';
-import { RxMethod, rxMethod } from '@ngrx/signals/rxjs-interop';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
-import { SocketService } from '../../../core/services/socket-service';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { tapResponse } from '@ngrx/operators';
-import { User } from '../../users/models/user';
 
 type ChatState = {
   activeChatId: string;
@@ -37,10 +35,9 @@ export const ChatStore = signalStore(
   })),
   withProps(() => ({
     backendCommunicator: inject(BackendCommunicator),
-    socketService: inject(SocketService),
   })),
 
-  withMethods(({ backendCommunicator, socketService, ...store }) => ({
+  withMethods(({ backendCommunicator, ...store }) => ({
     selectChat(chat: Chat) {
       patchState(store, { activeChatId: chat.id });
     },
@@ -155,7 +152,6 @@ export const ChatStore = signalStore(
       ),
     ),
 
-
     upsert(chat: Chat) {
       const current = store.chats();
       const exists = current.some((c) => c.id === chat.id);
@@ -171,7 +167,7 @@ export const ChatStore = signalStore(
     closeActiveChat() {
       const chatId = store.activeChatId();
       if (chatId !== '') {
-        socketService.emit('leave_chat', chatId);
+        backendCommunicator.leaveChat(chatId);
       }
       patchState(store, {
         activeChatId: '',
@@ -194,45 +190,69 @@ export const ChatStore = signalStore(
       );
     },
 
-    listenForUserUpdates_: rxMethod<User> (
-      
+    listenForChatDeleted: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForChatDeleted().pipe(
+            tap(({ chatId }) => {
+              patchState(store, (state) => ({
+                chats: state.chats.filter((chat) => chat.id !== chatId),
+              }));
+              //store.closeActiveChat()
+              if (store.activeChatId() === chatId) {
+                if (chatId !== '') {
+                  backendCommunicator.leaveChat(chatId);
+                }
+                patchState(store, {
+                  activeChatId: '',
+                });
+              }
+            }),
+          ),
+        ),
+      ),
     ),
 
-    listenForUserUpdates() {
-      backendCommunicator.listenForUserUpdates().subscribe((user) => {
-        patchState(store, (state) => ({
-          chats: state.chats.map((chat) => ({
-            ...chat,
-            messages: chat.messages.map((msg) =>
-              msg.userId === user.id
-                ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
-                : msg,
-            ),
-            participants: chat.participants.map((p) =>
-              p.id === user.id
-                ? { ...p, avatarColor: user.avatarColor, username: user.username }
-                : p,
-            ),
-          })),
-        }));
-      });
-    },
+    listenForUserUpdates: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForUserUpdates().pipe(
+            tap((user) => {
+              patchState(store, (state) => ({
+                chats: state.chats.map((chat) => ({
+                  ...chat,
+                  messages: chat.messages.map((msg) =>
+                    msg.userId === user.id
+                      ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
+                      : msg,
+                  ),
+                  participants: chat.participants.map((p) =>
+                    p.id === user.id
+                      ? { ...p, avatarColor: user.avatarColor, username: user.username }
+                      : p,
+                  ),
+                })),
+              }));
+            }),
+          ),
+        ),
+      ),
+    ),
 
-    listenForChatDeleted() {
-      return backendCommunicator.listenForChatDeleted().subscribe(({ chatId }) => {
-        patchState(store, { chats: store.chats().filter((chat) => chat.id !== chatId) });
-        if (store.activeChatId() === chatId) this.closeActiveChat();
-      });
-    },
-
-    listenForParticipantsChanged() {
-      backendCommunicator.listenForParticipantsChanged().subscribe(({ chatId }) => {
-        if (store.activeChatId() === chatId) {
-          this.loadParticipants(chatId);
-        }
-        this.refreshChatCount(chatId);
-      });
-    },
+    listenForParticipantsChanged: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForParticipantsChanged().pipe(
+            tap(({ chatId }) => {
+              if (store.activeChatId() === chatId) {
+                //store.loadParticipants(chatId);
+              }
+              //store.refreshChatCount(chatId);
+            }),
+          ),
+        ),
+      ),
+    ),
 
     listenForRemovedFromChat() {
       return backendCommunicator.listenForRemovedFromChat().subscribe(({ chatId }) => {
