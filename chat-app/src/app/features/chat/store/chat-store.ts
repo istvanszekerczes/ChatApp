@@ -36,7 +36,7 @@ export const ChatStore = signalStore(
   withProps(() => ({
     backendCommunicator: inject(BackendCommunicator),
   })),
-
+  //withMetohds for the core functions of the store.
   withMethods(({ backendCommunicator, ...store }) => ({
     selectChat(chat: Chat) {
       patchState(store, { activeChatId: chat.id });
@@ -189,7 +189,10 @@ export const ChatStore = signalStore(
         }),
       );
     },
+  })),
 
+  //withMetohds for listeners that are using the store's other functions.
+  withMethods(({ backendCommunicator, ...store }) => ({
     listenForChatDeleted: rxMethod<void>(
       pipe(
         switchMap(() =>
@@ -198,15 +201,7 @@ export const ChatStore = signalStore(
               patchState(store, (state) => ({
                 chats: state.chats.filter((chat) => chat.id !== chatId),
               }));
-              //store.closeActiveChat()
-              if (store.activeChatId() === chatId) {
-                if (chatId !== '') {
-                  backendCommunicator.leaveChat(chatId);
-                }
-                patchState(store, {
-                  activeChatId: '',
-                });
-              }
+              store.closeActiveChat();
             }),
           ),
         ),
@@ -245,65 +240,89 @@ export const ChatStore = signalStore(
           backendCommunicator.listenForParticipantsChanged().pipe(
             tap(({ chatId }) => {
               if (store.activeChatId() === chatId) {
-                //store.loadParticipants(chatId);
+                store.loadParticipants(chatId);
               }
-              //store.refreshChatCount(chatId);
+              store.refreshChatCount(chatId);
             }),
           ),
         ),
       ),
     ),
 
-    listenForRemovedFromChat() {
-      return backendCommunicator.listenForRemovedFromChat().subscribe(({ chatId }) => {
-        patchState(store, {
-          chats: store.chats().flatMap((chat) => {
-            if (chat.id !== chatId) return [chat];
-            if (chat.type === 'PRIVATE_GROUP') return [];
-            return [
-              {
-                ...chat,
-                isMember: false,
-                participantCount: Math.max(0, chat.participantCount - 1),
-              },
-            ];
-          }),
-        });
-        if (store.activeChatId() === chatId) {
-          this.closeActiveChat();
-        }
-      });
-    },
-
-    listenForAddedToChat() {
-      backendCommunicator.listenForAddedToChat().subscribe(() => {
-        this.loadChats();
-      });
-    },
-
-    listenForNewChats() {
-      backendCommunicator.listenForNewChats().subscribe((chat) => {
-        console.log('[socket] chat_created', chat);
-        this.upsert(chat);
-      });
-    },
-
-    listenForMessages() {
-      return backendCommunicator.listenForMessages().subscribe((msg) => {
-        if (msg.chatId !== store.activeChatId()) return;
-        patchState(store, (state) => ({
-          chats: state.chats.map((chat) =>
-            chat.id === msg.chatId
-              ? {
-                  ...chat,
-                  messages: chat.messages.some((m) => m.id === msg.id)
-                    ? chat.messages
-                    : [...chat.messages, msg],
-                }
-              : chat,
+    listenForRemovedFromChat: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForRemovedFromChat().pipe(
+            tap(({ chatId }) => {
+              patchState(store, (state) => ({
+                chats: state.chats.flatMap((chat) => {
+                  if (chat.id !== chatId) return [chat];
+                  if (chat.type === 'PRIVATE_GROUP') return [];
+                  return [
+                    {
+                      ...chat,
+                      isMember: false,
+                      participantCount: Math.max(0, chat.participantCount - 1),
+                    },
+                  ];
+                }),
+              }));
+              if (store.activeChatId() === chatId) {
+                store.closeActiveChat();
+              }
+            }),
           ),
-        }));
-      });
-    },
+        ),
+      ),
+    ),
+
+    listenForAddedToChat: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForAddedToChat().pipe(
+            tap(() => {
+              store.loadChats();
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    listenForNewChats: rxMethod<Chat>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForNewChats().pipe(
+            tap((newChat) => {
+              console.log('[socket] chat_created', newChat);
+              store.upsert(newChat);
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    listenForMessages: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForMessages().pipe(
+            tap((msg) => {
+              if (msg.chatId !== store.activeChatId()) return;
+              patchState(store, (state) => ({
+                chats: state.chats.map((chat) =>
+                  chat.id === msg.chatId
+                    ? {
+                        ...chat,
+                        messages: chat.messages.some((m) => m.id === msg.id)
+                          ? chat.messages
+                          : [...chat.messages, msg],
+                      }
+                    : chat,
+                ),
+              }));
+            }),
+          ),
+        ),
+      ),
+    ),
   })),
 );
