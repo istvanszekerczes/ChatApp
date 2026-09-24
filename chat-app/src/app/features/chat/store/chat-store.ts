@@ -288,7 +288,7 @@ export const ChatStore = signalStore(
       ),
     ),
 
-    listenForNewChats: rxMethod<Chat>(
+    listenForNewChats: rxMethod<void>(
       pipe(
         switchMap(() =>
           backendCommunicator.listenForNewChats().pipe(
