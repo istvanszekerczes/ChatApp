@@ -36,7 +36,7 @@ export const ChatStore = signalStore(
   withProps(() => ({
     backendCommunicator: inject(BackendCommunicator),
   })),
-  //withMetohds for the core functions of the store.
+  //withMethods for the core functions of the store.
   withMethods(({ backendCommunicator, ...store }) => ({
     selectChat(chat: Chat) {
       patchState(store, { activeChatId: chat.id });
@@ -191,7 +191,7 @@ export const ChatStore = signalStore(
     },
   })),
 
-  //withMetohds for listeners that are using the store's other functions.
+  //withMethods for listeners that are using the store's other functions.
   withMethods(({ backendCommunicator, ...store }) => ({
     listenForChatDeleted: rxMethod<void>(
       pipe(
