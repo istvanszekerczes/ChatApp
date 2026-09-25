@@ -3,7 +3,9 @@ import { signalStore, withMethods, withState, patchState, withProps } from '@ngr
 import { User } from '../../users/models/user';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
-import { map, tap, of, catchError, Observable } from 'rxjs';
+import { map, tap, of, catchError, Observable, pipe, switchMap } from 'rxjs';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { tapResponse } from '@ngrx/operators';
 
 type UserState = {
   currentUser: User | null;
@@ -22,71 +24,22 @@ export const UserStore = signalStore(
   withState(initialState),
   withDevtools('users'),
   withProps(() => ({
-    backendCommunicator: inject(BackendCommunicator)
+    backendCommunicator: inject(BackendCommunicator),
   })),
   withMethods(({ backendCommunicator, ...store }) => ({
-    loadUsers() {
-      patchState(store, { usersLoading: true });
-      backendCommunicator
-        .loadUsers()
-        .pipe(map((r) => r.users))
-        .subscribe({
-          next: (users) => patchState(store, { users, usersLoading: false }),
-          error: () => patchState(store, { usersLoading: false }),
-        });
-    },
-
-    listenForUserUpdates() {
-      backendCommunicator.listenForUserUpdates().subscribe((user) => {
-        patchState(store, {
-          users: store
-            .users()
-            .map((p) =>
-              p.id === user.id
-                ? { ...p, avatarColor: user.avatarColor, username: user.username }
-                : p,
-            ),
-        });
-      });
-    },
-
-    listenForNewUser() {
-      return backendCommunicator.listenForNewUsers().subscribe((newUser) => {
-        const current = store.users();
-        if (current.some((u) => u.id === newUser.id)) return;
-
-        patchState(store, {
-          users: [
-            ...current,
-            {
-              id: newUser.id,
-              username: newUser.username,
-              avatarColor: newUser.avatarColor,
-              online: newUser.online,
-              lastOnline: newUser.lastOnline,
-              email: '',
-              createdAt: '',
-              googleId: null,
-              facebookId: null,
-            },
-          ].sort((a, b) => a.username.localeCompare(b.username)),
-        });
-      });
-    },
-
-    listenForPresence() {
-      return backendCommunicator.listenForPresence().subscribe((event) => {
-        patchState(store, {
-          users: store
-            .users()
-            .map((u) =>
-              u.id === event.userId
-                ? { ...u, online: event.online, lastOnline: event.lastOnline ?? u.lastOnline }
-                : u,
-            ),
-        });
-      });
-    },
+    loadUsers: rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { usersLoading: true })),
+        switchMap(() =>
+          backendCommunicator.loadUsers().pipe(
+            tapResponse({
+              next: (res) => patchState(store, { users: res.users, usersLoading: false }),
+              error: () => patchState(store, { usersLoading: false }),
+            }),
+          ),
+        ),
+      ),
+    ),
 
     clearUsers() {
       patchState(store, initialState);
@@ -111,11 +64,91 @@ export const UserStore = signalStore(
       );
     },
 
+    /*
+    loadCurrentUser: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.loadCurrentUser().pipe(
+            tapResponse({
+              next: (res) => patchState(store, { currentUser: res.user }),
+              error: () => patchState(store, { currentUser: null}),
+            }),
+          ),
+        ),
+      ),
+    ),*/
+
     updateAvatarColor(avatarColor: string): Observable<User> {
       return backendCommunicator.updateAvatarColor(avatarColor).pipe(
         map((response) => response.user),
         tap((user) => patchState(store, { currentUser: user })),
       );
+    },
+  })),
+
+  withMethods(({ backendCommunicator, ...store }) => ({
+    listenForUserUpdates: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForUserUpdates().pipe(
+            tap((user) => {
+              patchState(store, {
+                users: store
+                  .users()
+                  .map((p) =>
+                    p.id === user.id
+                      ? { ...p, avatarColor: user.avatarColor, username: user.username }
+                      : p,
+                  ),
+              });
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    listenForNewUser: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForNewUsers().pipe(
+            tap((newUser) => {
+              const current = store.users();
+              if (current.some((u) => u.id === newUser.id)) return;
+
+              patchState(store, {
+                users: [
+                  ...current,
+                  {
+                    id: newUser.id,
+                    username: newUser.username,
+                    avatarColor: newUser.avatarColor,
+                    online: newUser.online,
+                    lastOnline: newUser.lastOnline,
+                    email: '',
+                    createdAt: '',
+                    googleId: null,
+                    facebookId: null,
+                  },
+                ].sort((a, b) => a.username.localeCompare(b.username)),
+              });
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    listenForPresence() {
+      return backendCommunicator.listenForPresence().subscribe((event) => {
+        patchState(store, {
+          users: store
+            .users()
+            .map((u) =>
+              u.id === event.userId
+                ? { ...u, online: event.online, lastOnline: event.lastOnline ?? u.lastOnline }
+                : u,
+            ),
+        });
+      });
     },
   })),
 );
