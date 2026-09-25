@@ -293,7 +293,6 @@ export const ChatStore = signalStore(
         switchMap(() =>
           backendCommunicator.listenForNewChats().pipe(
             tap((newChat) => {
-              console.log('[socket] chat_created', newChat);
               store.upsert(newChat);
             }),
           ),
