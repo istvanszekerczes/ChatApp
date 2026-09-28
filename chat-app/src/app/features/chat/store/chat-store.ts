@@ -205,15 +205,7 @@ export const ChatStore = signalStore(
         ),
       ),
     ),
-    // fn(chats => ({...}))
-    /* fn(chats => {
-    if(!chat) {
-      return state.chats
-    }
-    messages,
-    participants
-   })
-*/
+
     listenForUserUpdates: rxMethod<void>(
       pipe(
         switchMap(() =>
