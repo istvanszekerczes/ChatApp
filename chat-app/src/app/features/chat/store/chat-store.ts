@@ -13,6 +13,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { tapResponse } from '@ngrx/operators';
+ import { watchState, withHooks } from '@ngrx/signals';
 
 type ChatState = {
   activeChatId: string;
@@ -97,7 +98,7 @@ export const ChatStore = signalStore(
         tap((chatId) =>
           patchState(store, (state) => ({
             chats: state.chats.map((chat) =>
-              chat.id === chatId ? { ...chat, messagesLoading: true } : chat,
+              chat.id === chatId ? { ...chat, messagesLoading: false } : chat,
             ),
           })),
         ),
@@ -132,18 +133,15 @@ export const ChatStore = signalStore(
       pipe(
         switchMap((chatId) =>
           backendCommunicator.refreshChatCount(chatId).pipe(
-            map((r) => ({ chatId, updated: r.chats.find((c) => c.id === chatId) })),
+            map((r) => r.chats.find((c) => c.id === chatId)),
             tapResponse({
-              next: ({ chatId, updated }) => {
+              next: (updated) => {
                 if (!updated) return;
-
                 patchState(store, (state) => ({
-                  chats: state.chats.map((c) => (c.id === chatId ? updated : c)),
+                  chats: state.chats.map((c) =>
+                    c.id === chatId ? { ...c, participantCount: updated.participantCount } : c,
+                  ),
                 }));
-
-                if (store.activeChatId() === chatId) {
-                  patchState(store, { activeChatId: chatId });
-                }
               },
               error: () => {},
             }),
@@ -207,21 +205,32 @@ export const ChatStore = signalStore(
         ),
       ),
     ),
-
+    // fn(chats => ({...}))
+    /* fn(chats => {
+    if(!chat) {
+      return state.chats
+    }
+    messages,
+    participants
+   })
+*/
     listenForUserUpdates: rxMethod<void>(
       pipe(
         switchMap(() =>
           backendCommunicator.listenForUserUpdates().pipe(
             tap((user) => {
+              if (store.chats().length === 0) {
+                return;
+              }
               patchState(store, (state) => ({
                 chats: state.chats.map((chat) => ({
                   ...chat,
-                  messages: chat.messages.map((msg) =>
+                  messages: chat.messages?.map((msg) =>
                     msg.userId === user.id
                       ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
                       : msg,
                   ),
-                  participants: chat.participants.map((p) =>
+                  participants: chat.participants?.map((p) =>
                     p.id === user.id
                       ? { ...p, avatarColor: user.avatarColor, username: user.username }
                       : p,
@@ -324,4 +333,18 @@ export const ChatStore = signalStore(
       ),
     ),
   })),
+
+withHooks({
+  onInit(store) {
+    let hadMessages = false;
+    watchState(store, (state) => {
+      const active = state.chats.find((c) => c.id === state.activeChatId);
+      const hasMessages = !!active?.messages;
+      if (hadMessages && !hasMessages && state.activeChatId) {
+        console.trace('messages removed from active chat', active);
+      }
+      hadMessages = hasMessages;
+    });
+  },
+}),
 );
