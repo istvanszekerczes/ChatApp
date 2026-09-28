@@ -64,20 +64,6 @@ export const UserStore = signalStore(
       );
     },
 
-    /*
-    loadCurrentUser: rxMethod<void>(
-      pipe(
-        switchMap(() =>
-          backendCommunicator.loadCurrentUser().pipe(
-            tapResponse({
-              next: (res) => patchState(store, { currentUser: res.user }),
-              error: () => patchState(store, { currentUser: null}),
-            }),
-          ),
-        ),
-      ),
-    ),*/
-
     updateAvatarColor(avatarColor: string): Observable<User> {
       return backendCommunicator.updateAvatarColor(avatarColor).pipe(
         map((response) => response.user),
@@ -137,18 +123,24 @@ export const UserStore = signalStore(
       ),
     ),
 
-    listenForPresence() {
-      return backendCommunicator.listenForPresence().subscribe((event) => {
-        patchState(store, {
-          users: store
-            .users()
-            .map((u) =>
-              u.id === event.userId
-                ? { ...u, online: event.online, lastOnline: event.lastOnline ?? u.lastOnline }
-                : u,
+    listenForPresence: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForPresence().pipe(
+            tap((event) =>
+              patchState(store, {
+                users: store
+                  .users()
+                  .map((u) =>
+                    u.id === event.userId
+                      ? { ...u, online: event.online, lastOnline: event.lastOnline ?? u.lastOnline }
+                      : u,
+                  ),
+              }),
             ),
-        });
-      });
-    },
+          ),
+        ),
+      ),
+    ),
   })),
 );
