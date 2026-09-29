@@ -165,6 +165,13 @@ io.on("connection", (socket) => {
             user: { select: { username: true, avatarColor: true } },
           },
         });
+        await prisma.chat.update({
+          where: {id: data.chatId},
+          data: {
+            lastMessageContent: savedMessage.content,
+            lastMessageSender: savedMessage.user.username,
+          }
+        })
 
         io.to(data.chatId).emit("receive_message", savedMessage);
       } catch (error) {

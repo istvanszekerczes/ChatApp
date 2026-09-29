@@ -52,6 +52,8 @@ router.get(
               user: { select: { id: true, username: true, avatarColor: true } },
             },
           },
+          lastMessageContent: true,
+          lastMessageSender: true,
           _count: { select: { participants: true } },
         },
         orderBy: { createdAt: "desc" },
