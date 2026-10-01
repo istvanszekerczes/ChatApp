@@ -332,7 +332,6 @@ export const ChatStore = signalStore(
         switchMap(() =>
           backendCommunicator.listenForLastMessage().pipe(
             tap((lastChat) => {
-              console.log('last_message received', lastChat);
               patchState(store, (state) => ({
                 chats: state.chats.map((chat) =>
                   chat.id === lastChat.id
