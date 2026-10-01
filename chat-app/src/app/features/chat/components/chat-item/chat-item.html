@@ -13,8 +13,8 @@
                     <mat-icon class="inline-icon">lock</mat-icon>
                 } @else if (chat().lastMessageContent) {
                     <span class="chat-sub">
-                        <span class="chat-last-sender">{{ chat().lastMessageSender | lastSender }}</span>
-                        <span class="chat-last-message"> {{ chat().lastMessageContent }}</span>
+                        <span class="chat-last-sender">{{ this.lastMessageSender() | lastSender }}</span>
+                        <span class="chat-last-message"> {{ this.lastMessageContent() | textTrimmer }}</span>
                     </span>
                 } 
             </span>

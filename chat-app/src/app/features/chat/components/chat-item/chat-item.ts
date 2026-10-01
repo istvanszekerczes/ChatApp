@@ -3,10 +3,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
 import { Chat } from '../../models/chat';
 import { LastSenderPipe } from '../../pipes/last-sender-pipe';
+import { TextTrimmerPipe } from '../../pipes/text-trimmer-pipe';
 
 @Component({
   selector: 'app-chat-item',
-  imports: [MatIconModule, InitialPipe, LastSenderPipe],
+  imports: [MatIconModule, InitialPipe, LastSenderPipe, TextTrimmerPipe],
   templateUrl: './chat-item.html',
   styleUrl: './chat-item.scss',
 })
@@ -16,6 +17,9 @@ export class ChatItem {
   readonly select = output<Chat>();
 
   readonly avatarColor = computed(() => this.chat().avatarColor || '#3b82f6');
+
+  readonly lastMessageContent = computed(() => this.chat().lastMessageContent)
+  readonly lastMessageSender = computed(() => this.chat().lastMessageSender)
 
   /** Member count is meaningless for public groups (everyone) and DMs (always 2). */
   readonly showCount = computed(() => {
