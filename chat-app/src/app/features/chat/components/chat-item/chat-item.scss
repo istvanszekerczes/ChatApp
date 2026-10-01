@@ -29,6 +29,9 @@
     &.active:hover {
         background-color: var(--color-border-hover);
     }
+    .last-message {
+        margin-bottom: 0;
+    }
 }
 
 .avatar {
