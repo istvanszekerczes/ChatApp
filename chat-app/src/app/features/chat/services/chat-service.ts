@@ -287,6 +287,7 @@ export class ChatService {
     this.store.listenForChatDeleted();
     this.store.listenForRemovedFromChat();
     this.store.listenForAddedToChat();
+    this.store.listenForLastMessage();
   }
 
   /**

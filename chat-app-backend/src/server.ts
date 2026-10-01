@@ -165,7 +165,7 @@ io.on("connection", (socket) => {
             user: { select: { username: true, avatarColor: true } },
           },
         });
-        await prisma.chat.update({
+        const chat = await prisma.chat.update({
           where: {id: data.chatId},
           data: {
             lastMessageContent: savedMessage.content,
@@ -174,6 +174,7 @@ io.on("connection", (socket) => {
         })
 
         io.to(data.chatId).emit("receive_message", savedMessage);
+        io.to(userId).emit("last_message", chat);
       } catch (error) {
         console.error("Failed to save and send message:", error);
         socket.emit("error", { message: "Could not send message" });

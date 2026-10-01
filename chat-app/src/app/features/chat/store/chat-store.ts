@@ -326,6 +326,28 @@ export const ChatStore = signalStore(
         ),
       ),
     ),
+
+    listenForLastMessage: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForLastMessage().pipe(
+            tap((lastChat) =>
+              patchState(store, (state) => ({
+                chats: state.chats.map((chat) =>
+                  chat.id === lastChat.id
+                    ? {
+                        ...chat,
+                        lastMessageContent: lastChat.lastMessageContent,
+                        lastMessageSender: lastChat.lastMessageSender,
+                      }
+                    : chat,
+                ),
+              }))
+            )
+          )
+        )
+      )
+    )
   })),
 
 withHooks({
