@@ -4,10 +4,11 @@ import { Pipe, PipeTransform } from '@angular/core';
   name: 'textTrimmer',
 })
 export class TextTrimmerPipe implements PipeTransform {
-  transform(value: string): string {
-    if (value.length > 22) {
-      return value.substring(0, 19) + '...'
+  transform(value: string, name: string): string {
+    const space = 21 - name.length;
+    if (value.length + name.length < 22) {
+      return value;
     }
-    return value;
+    return value.substring(0, space) + '...'
   }
 }

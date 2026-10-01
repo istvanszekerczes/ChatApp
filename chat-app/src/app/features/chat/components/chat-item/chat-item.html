@@ -14,7 +14,7 @@
                 } @else if (chat().lastMessageContent) {
                     <span class="chat-sub">
                         <span class="chat-last-sender">{{ this.lastMessageSender() | lastSender }}</span>
-                        <span class="chat-last-message"> {{ this.lastMessageContent() | textTrimmer }}</span>
+                        <span class="chat-last-message"> {{ this.lastMessageContent() | textTrimmer: this.lastMessageSender() }}</span>
                     </span>
                 } 
             </span>
