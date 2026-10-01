@@ -13,7 +13,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { tapResponse } from '@ngrx/operators';
- import { watchState, withHooks } from '@ngrx/signals';
+import { watchState, withHooks } from '@ngrx/signals';
 
 type ChatState = {
   activeChatId: string;
@@ -331,7 +331,8 @@ export const ChatStore = signalStore(
       pipe(
         switchMap(() =>
           backendCommunicator.listenForLastMessage().pipe(
-            tap((lastChat) =>
+            tap((lastChat) => {
+              console.log('last_message received', lastChat);
               patchState(store, (state) => ({
                 chats: state.chats.map((chat) =>
                   chat.id === lastChat.id
@@ -342,25 +343,25 @@ export const ChatStore = signalStore(
                       }
                     : chat,
                 ),
-              }))
-            )
-          )
-        )
-      )
-    )
+              }));
+            }),
+          ),
+        ),
+      ),
+    ),
   })),
 
-withHooks({
-  onInit(store) {
-    let hadMessages = false;
-    watchState(store, (state) => {
-      const active = state.chats.find((c) => c.id === state.activeChatId);
-      const hasMessages = !!active?.messages;
-      if (hadMessages && !hasMessages && state.activeChatId) {
-        console.trace('messages removed from active chat', active);
-      }
-      hadMessages = hasMessages;
-    });
-  },
-}),
+  withHooks({
+    onInit(store) {
+      let hadMessages = false;
+      watchState(store, (state) => {
+        const active = state.chats.find((c) => c.id === state.activeChatId);
+        const hasMessages = !!active?.messages;
+        if (hadMessages && !hasMessages && state.activeChatId) {
+          console.trace('messages removed from active chat', active);
+        }
+        hadMessages = hasMessages;
+      });
+    },
+  }),
 );
