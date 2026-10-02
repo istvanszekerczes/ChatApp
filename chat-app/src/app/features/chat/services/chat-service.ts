@@ -1,36 +1,39 @@
-import { Service, NgZone, inject, signal } from '@angular/core';
+import { Service, NgZone, inject, signal, computed } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
 import { Chat, CreateChatPayload } from '../models/chat';
 import { User } from '../../users/models/user';
-import { Message } from '../models/message';
+import { SocketService } from '../../../core/services/socket-service';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { Router } from '@angular/router';
 import { JoinChatDialog } from '../components/join-chat-dialog/join-chat-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { ChatStore } from '../store/chat-store';
 
 @Service()
 export class ChatService {
-  private zone = inject(NgZone);
-  readonly chats = signal<Chat[]>([]);
-  readonly loading = signal(false);
+  private socketService = inject(SocketService);
+  readonly chats = computed(() => this.store.chats());
+  readonly loading = computed(() => this.store.chatsLoading());
   private userListenerBound = false;
   private backendCommunicator = inject(BackendCommunicator);
   private dialog = inject(MatDialog);
 
   private listening = false;
 
-  readonly activeChat = signal<Chat | null>(null);
-  readonly messages = signal<Message[]>([]);
-  readonly messagesLoading = signal(false);
+  readonly activeChatId = computed(() => this.store.activeChatId());
+  readonly activeChat = computed(() => this.store.activeChat());
+  readonly messages = computed(() => this.activeChat()?.messages);
+  readonly messagesLoading = computed(() => this.activeChat()?.messagesLoading);
 
   private messageListenerBound = false;
-  readonly participants = signal<User[]>([]);
-  readonly participantsLoading = signal(false);
+  readonly participants = computed(() => this.activeChat()?.participants);
+  readonly participantsLoading = computed(() => this.activeChat()?.participantsLoading);
 
   private chatEventsBound = false;
   private router = inject(Router);
 
   private pendingDirectChats = new Set<string>();
+  private store = inject(ChatStore);
   /**
    * Selects a chat to view its messages and participants.
    *
@@ -40,46 +43,45 @@ export class ChatService {
    * If a different chat is selected, it leaves the previous chat and joins the new one.
    */
   selectChat(chat: Chat) {
-  if (this.activeChat()?.id === chat.id) return;
+    if (this.activeChatId() === chat.id) return;
 
-  if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
-    this.dialog
-      .open(JoinChatDialog, {
-        panelClass: 'chat-dialog-panel',
-        data: chat,
-      })
-      .afterClosed()
-      .subscribe((joined) => {
-        if (!joined) return;
+    if (chat.type === 'PROTECTED_GROUP' && !chat.isMember) {
+      this.dialog
+        .open(JoinChatDialog, {
+          panelClass: 'chat-dialog-panel',
+          data: chat,
+        })
+        .afterClosed()
+        .subscribe((joined) => {
+          if (!joined) return;
 
-        const updated = this.chats().find((c) => c.id === chat.id);
-        if (updated) {
-          this.enterChat(updated);
-        }
-      });
-    return;
+          const updated = this.chats().find((c) => c.id === chat.id);
+          if (updated) {
+            this.enterChat(updated);
+          }
+        });
+      return;
+    }
+
+    this.enterChat(chat);
   }
 
-  this.enterChat(chat);
-}
+  private enterChat(chat: Chat) {
+    const previousChatId = this.activeChatId();
+    if (previousChatId) {
+      this.socketService.emit('leave_chat', previousChatId);
+    }
 
-private enterChat(chat: Chat) {
-  const previousChatId = this.activeChat()?.id;
-  if (previousChatId) {
-    this.backendCommunicator.leaveChat(previousChatId);
+    this.store.selectChat(chat);
+    this.store.loadMessages(chat.id);
+
+    if (chat.type !== 'PUBLIC_GROUP') {
+      this.store.loadParticipants(chat.id);
+    }
+
+    this.listenForMessages();
+    this.socketService.emit('join_chat', chat.id);
   }
-
-  this.activeChat.set(chat);
-  this.messages.set([]);
-  this.participants.set([]);
-
-  this.listenForMessages();
-  this.backendCommunicator.joinChatRoom(chat.id);
-  this.loadMessages(chat.id);
-  if (chat.type !== 'PUBLIC_GROUP') {
-    this.loadParticipants(chat.id);
-  }
-}
 
   /**
    * Sends a message in the currently selected chat.
@@ -88,36 +90,10 @@ private enterChat(chat: Chat) {
    * @returns void
    */
   sendMessage(content: string) {
-    const chat = this.activeChat();
+    const chat = this.backendCommunicator.getChat(this.activeChatId());
     if (!chat || !content.trim()) return;
-    this.backendCommunicator.sendMessage(chat.id, content.trim());
+    this.backendCommunicator.sendMessage(this.activeChatId(), content.trim());
   }
-
-  /**
-   * Loads the messages for the specified chat.
-   *
-   * @param chatId The ID of the chat for which to load messages.
-   * @returns void
-   */
-
-  private loadMessages(chatId: string) {
-    this.messagesLoading.set(true);
-    this.backendCommunicator
-      .loadMessages(chatId)
-      .pipe(map((r) => r.messages))
-      .subscribe({
-        next: (messages) => {
-          if (this.activeChat()?.id !== chatId) return;
-          this.messages.set(messages);
-          this.messagesLoading.set(false);
-        },
-        error: (err) => {
-          console.error('Failed to load messages', err);
-          this.messagesLoading.set(false);
-        },
-      });
-  }
-
   /**
    * Listens for incoming messages in the currently selected chat.
    *
@@ -127,14 +103,7 @@ private enterChat(chat: Chat) {
     if (this.messageListenerBound) return;
     this.messageListenerBound = true;
 
-    this.backendCommunicator.listenForMessages().subscribe((msg) => {
-      if (msg.chatId !== this.activeChat()?.id) return;
-      this.zone.run(() => {
-        this.messages.update((current) =>
-          current.some((m) => m.id === msg.id) ? current : [...current, msg],
-        );
-      });
-    });
+    this.store.listenForMessages();
   }
 
   /**
@@ -143,18 +112,6 @@ private enterChat(chat: Chat) {
    * @param chatId The ID of the chat for which to refresh the count.
    * @returns void
    */
-  private refreshChatCount(chatId: string) {
-    this.backendCommunicator
-      .refreshChatCount(chatId)
-      .pipe(map((r) => r.chats.find((c) => c.id === chatId)))
-      .subscribe((updated) => {
-        if (!updated) return;
-        this.chats.update((current) => current.map((c) => (c.id === chatId ? updated : c)));
-        if (this.activeChat()?.id === chatId) {
-          this.activeChat.set(updated);
-        }
-      });
-  }
 
   /**
    * Listens for new chats created by other users.
@@ -165,10 +122,7 @@ private enterChat(chat: Chat) {
     if (this.listening) return;
     this.listening = true;
 
-    this.backendCommunicator.listenForNewChats().subscribe((chat) => {
-      console.log('[socket] chat_created', chat);
-      this.zone.run(() => this.upsert(chat));
-    });
+    this.store.listenForNewChats();
   }
 
   /**
@@ -180,23 +134,7 @@ private enterChat(chat: Chat) {
     if (this.userListenerBound) return;
     this.userListenerBound = true;
 
-    this.backendCommunicator.listenForUserUpdates().subscribe((user) => {
-      this.zone.run(() => {
-        this.messages.update((current) =>
-          current.map((msg) =>
-            msg.userId === user.id
-              ? { ...msg, user: { ...msg.user, avatarColor: user.avatarColor } }
-              : msg,
-          ),
-        );
-
-        this.participants.update((current) =>
-          current.map((p) =>
-            p.id === user.id ? { ...p, avatarColor: user.avatarColor, username: user.username } : p,
-          ),
-        );
-      });
-    });
+    this.store.listenForUserUpdates();
   }
 
   /**
@@ -205,26 +143,12 @@ private enterChat(chat: Chat) {
    * @returns void
    */
   loadChats() {
-    this.loading.set(true);
-    this.backendCommunicator
-      .loadChats()
-      .pipe(map((r) => r.chats))
-      .subscribe({
-        next: (chats) => {
-          this.chats.set(chats);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          console.error('Failed to load chats', err);
-          this.loading.set(false);
-        },
-      });
+    this.store.loadChats();
   }
 
   getChat(chatId: string): Observable<Chat> {
-  return this.backendCommunicator.getChat(chatId).pipe(map((r) => r.chat));
-}
-
+    return this.backendCommunicator.getChat(chatId).pipe(map((r) => r.chat));
+  }
 
   /**
    * Clears the list of chats and resets the active chat and messages.
@@ -232,9 +156,7 @@ private enterChat(chat: Chat) {
    * @returns void
    */
   clearChats() {
-    this.chats.set([]);
-    this.activeChat.set(null);
-    this.messages.set([]);
+    this.store.clearChats();
   }
 
   /**
@@ -307,9 +229,7 @@ private enterChat(chat: Chat) {
    * @returns void
    */
   private upsert(chat: Chat) {
-    this.chats.update((current) =>
-      current.some((c) => c.id === chat.id) ? current : [chat, ...current],
-    );
+    this.store.upsert(chat);
   }
 
   /**
@@ -319,18 +239,7 @@ private enterChat(chat: Chat) {
    * @returns void
    */
   loadParticipants(chatId: string) {
-    this.participantsLoading.set(true);
-    this.backendCommunicator
-      .loadParticipants(chatId)
-      .pipe(map((r) => r.participants))
-      .subscribe({
-        next: (participants) => {
-          if (this.activeChat()?.id !== chatId) return;
-          this.participants.set(participants);
-          this.participantsLoading.set(false);
-        },
-        error: () => this.participantsLoading.set(false),
-      });
+    this.store.loadParticipants(chatId);
   }
 
   /**
@@ -374,45 +283,10 @@ private enterChat(chat: Chat) {
     if (this.chatEventsBound) return;
     this.chatEventsBound = true;
 
-    this.backendCommunicator.listenForParticipantsChanged().subscribe(({ chatId }) => {
-      this.zone.run(() => {
-        if (this.activeChat()?.id === chatId) {
-          this.loadParticipants(chatId);
-        }
-        this.refreshChatCount(chatId);
-      });
-    });
-
-    this.backendCommunicator.listenForChatDeleted().subscribe(({ chatId }) => {
-      this.zone.run(() => {
-        this.chats.update((c) => c.filter((chat) => chat.id !== chatId));
-        if (this.activeChat()?.id === chatId) this.closeActiveChat();
-      });
-    });
-
-    this.backendCommunicator.listenForRemovedFromChat().subscribe(({ chatId }) => {
-      this.zone.run(() => {
-        this.chats.update((current) =>
-          current.flatMap((chat) => {
-            if (chat.id !== chatId) return [chat];
-            if (chat.type === 'PRIVATE_GROUP') return [];
-            return [
-              {
-                ...chat,
-                isMember: false,
-                participantCount: Math.max(0, chat.participantCount - 1),
-              },
-            ];
-          }),
-        );
-        if (this.activeChat()?.id === chatId) this.closeActiveChat();
-        this.router.navigate(['']);
-      });
-    });
-
-    this.backendCommunicator.listenForAddedToChat().subscribe(() => {
-      this.zone.run(() => this.loadChats());
-    });
+    this.store.listenForParticipantsChanged();
+    this.store.listenForChatDeleted();
+    this.store.listenForRemovedFromChat();
+    this.store.listenForAddedToChat();
   }
 
   /**
@@ -421,13 +295,7 @@ private enterChat(chat: Chat) {
    * @returns void
    */
   closeActiveChat() {
-    const chatId = this.activeChat()?.id;
-    if (chatId) {
-      this.backendCommunicator.leaveChat(chatId);
-    }
-    this.activeChat.set(null);
-    this.messages.set([]);
-    this.participants.set([]);
+    this.store.closeActiveChat();
   }
 
   /**
@@ -438,16 +306,6 @@ private enterChat(chat: Chat) {
    * @returns An Observable indicating the success or failure of the operation.
    */
   joinChat(chatId: string, password?: string): Observable<unknown> {
-    return this.backendCommunicator.joinChat(chatId, password).pipe(
-      tap(() => {
-        this.chats.update((current) =>
-          current.map((c) =>
-            c.id === chatId
-              ? { ...c, isMember: true, participantCount: c.participantCount + 1 }
-              : c,
-          ),
-        );
-      }),
-    );
+    return this.store.joinChat(chatId, password);
   }
 }

@@ -13,7 +13,7 @@ import { ChatInput } from '../chat-input/chat-input';
 export class ChatContainer {
   private chatService = inject(ChatService);
 
-  readonly activeChat = this.chatService.activeChat;
+  readonly activeChat = this.chatService.activeChatId;
   readonly messages = this.chatService.messages;
   readonly loading = this.chatService.messagesLoading;
 

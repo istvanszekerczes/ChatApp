@@ -31,7 +31,6 @@ export class DmList {
   });
 
   selectChat(chat: Chat) {
-    //this.chatService.selectChat(chat);
     this.router.navigate(['/chat', chat.id]);
   }
 

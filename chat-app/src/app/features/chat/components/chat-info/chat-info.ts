@@ -21,6 +21,7 @@ export class ChatInfo {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private router = inject(Router);
+
   readonly activeChat = this.chatService.activeChat;
   readonly participants = this.chatService.participants;
   readonly loading = this.chatService.participantsLoading;
@@ -98,7 +99,7 @@ export class ChatInfo {
       autoFocus: false,
       data: {
         chatId: chat.id,
-        existingIds: this.participants().map(p => p.id),
+        existingIds: this.participants()?.map(p => p.id),
       },
     }).afterClosed().subscribe(added => {
       if (added) this.chatService.loadParticipants(chat.id);

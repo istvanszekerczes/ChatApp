@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject } from '@angular/core';
+import { Component, OnInit, effect, inject, untracked, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from './core/services/auth-service';
@@ -16,27 +16,32 @@ export class App implements OnInit {
   private authService = inject(AuthService);
   private socketService = inject(SocketService);
   private chatService = inject(ChatService);
+  private userService = inject(UserService);
 
   private currentUser = toSignal(this.authService.currentUser$);
-  private userService = inject(UserService);
+  private currentUserId = computed(() => this.currentUser()?.id);
 
   constructor() {
     effect(() => {
-      if (this.currentUser()) {
-        this.socketService.connect();
-        this.chatService.listenForNewChats();
-        this.chatService.listenForUserUpdates();
-        this.chatService.loadChats();
-        this.chatService.listenForChatEvents();
-        this.userService.listenForPresence();
-        this.userService.loadUsers();
-        this.userService.listenForNewUsers();
-        this.userService.listenForUserUpdates();
-      } else {
-        this.socketService.disconnect();
-        this.chatService.clearChats();
-        this.userService.clearUsers();
-      }
+      const userId = this.currentUserId();
+
+      untracked(() => {
+        if (userId) {
+          this.socketService.connect();
+          this.chatService.listenForNewChats();
+          this.chatService.listenForUserUpdates();
+          this.chatService.loadChats();
+          this.chatService.listenForChatEvents();
+          this.userService.listenForPresence();
+          this.userService.loadUsers();
+          this.userService.listenForNewUsers();
+          this.userService.listenForUserUpdates();
+        } else {
+          this.socketService.disconnect();
+          this.chatService.clearChats();
+          this.userService.clearUsers();
+        }
+      });
     });
   }
 

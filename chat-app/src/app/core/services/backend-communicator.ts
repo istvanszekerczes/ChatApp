@@ -5,7 +5,6 @@ import { SocketService } from './socket-service';
 import { Message } from '../../features/chat/models/message';
 import { Chat, CreateChatPayload } from '../../features/chat/models/chat';
 import { User, PresenceEvent, NewUserEvent } from '../../features/users/models/user';
-import { Observable } from 'rxjs';
 
 @Service()
 export class BackendCommunicator {
