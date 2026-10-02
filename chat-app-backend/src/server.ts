@@ -175,10 +175,14 @@ io.on("connection", (socket) => {
         });
 
         io.to(data.chatId).emit("receive_message", savedMessage);
-        io.to(chat.participants.map((p) => `user:${p.userId}`)).emit(
-          "last_message",
-          chat,
-        );
+        if (chat.type === "PUBLIC_GROUP") {
+          io.emit("last_message", chat);
+        } else {
+          io.to(chat.participants.map((p) => `user:${p.userId}`)).emit(
+            "last_message",
+            chat,
+          );
+        }
       } catch (error) {
         console.error("Failed to save and send message:", error);
         socket.emit("error", { message: "Could not send message" });
