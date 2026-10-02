@@ -3,11 +3,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
 import { Chat } from '../../models/chat';
 import { LastSenderPipe } from '../../pipes/last-sender-pipe';
-import { TextTrimmerPipe } from '../../pipes/text-trimmer-pipe';
 
 @Component({
   selector: 'app-chat-item',
-  imports: [MatIconModule, InitialPipe, LastSenderPipe, TextTrimmerPipe],
+  imports: [MatIconModule, InitialPipe, LastSenderPipe],
   templateUrl: './chat-item.html',
   styleUrl: './chat-item.scss',
 })

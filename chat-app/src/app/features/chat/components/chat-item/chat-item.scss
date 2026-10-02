@@ -89,3 +89,9 @@
 .chat-last-sender::after {
     content: ': ';
 }
+
+.chat-last-message {
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; 
+}
