@@ -6,11 +6,8 @@ import { UserStore } from '../../users/store/user-store';
 })
 export class LastSenderPipe implements PipeTransform {
   userStore = inject(UserStore);
-  transform(value: string | null): string {
+  transform(value: string): string {
     const userName = this.userStore.currentUser()?.username;
-    if (value == userName) {
-      return 'You:'
-    }
-    return value + ':';
+    return userName === value ? 'You' : value;
   }
 }
