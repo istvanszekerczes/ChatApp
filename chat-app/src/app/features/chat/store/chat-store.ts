@@ -312,8 +312,6 @@ export const ChatStore = signalStore(
                   chat.id === msg.chatId
                     ? {
                         ...chat,
-                        lastMessageContent: msg.content,
-                        lastMessageSender: msg.user.username,
                         messages: chat.messages.some((m) => m.id === msg.id)
                           ? chat.messages
                           : [...chat.messages, msg],
@@ -337,8 +335,7 @@ export const ChatStore = signalStore(
                   chat.id === lastChat.id
                     ? {
                         ...chat,
-                        lastMessageContent: lastChat.lastMessageContent,
-                        lastMessageSender: lastChat.lastMessageSender,
+                        lastMessage: lastChat.lastMessage,
                       }
                     : chat,
                 ),

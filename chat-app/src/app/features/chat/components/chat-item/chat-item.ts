@@ -17,9 +17,7 @@ export class ChatItem {
 
   readonly avatarColor = computed(() => this.chat().avatarColor || '#3b82f6');
 
-  readonly lastMessageContent = computed(() => this.chat().lastMessageContent)
-  readonly lastMessageSender = computed(() => this.chat().lastMessageSender)
-
+  readonly lastMessage = computed(() => this.chat().lastMessage)
   /** Member count is meaningless for public groups (everyone) and DMs (always 2). */
   readonly showCount = computed(() => {
     const type = this.chat().type;

@@ -45,6 +45,8 @@ model Chat {
 
   directKey String? @unique
 
+  lastMessageId String?  @unique
+  lastMessage   Message? @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
 
   // Relations
   messages     Message[]
@@ -74,4 +76,5 @@ model Message {
   chatId String
   chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
+  lastMessage Chat? @relation("LastMessage")
 }

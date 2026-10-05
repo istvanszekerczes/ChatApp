@@ -21,8 +21,7 @@ export interface Chat {
   messages: Message[];
   messagesLoading: boolean;
   participantsLoading: boolean;
-  lastMessageContent: string;
-  lastMessageSender: string;
+  lastMessage: Message;
 }
 
 /**

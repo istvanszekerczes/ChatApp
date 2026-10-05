@@ -10,9 +10,9 @@
             <span class="chat-sub">
                 @if (showLock()) {
                     <mat-icon class="inline-icon">lock</mat-icon>
-                } @else if (chat().lastMessageContent) {
-                        <span class="chat-last-sender">{{ lastMessageSender() | lastSender }}</span>
-                        <span class="chat-last-message"> {{ lastMessageContent() }}</span>
+                } @else if (lastMessage()) {
+                        <span class="chat-last-sender">{{ lastMessage()?.user.username ?? '' | lastSender }}</span>
+                        <span class="chat-last-message"> {{ lastMessage()?.content ?? 'No messages yet' }}</span>
                 } 
             </span>
     </span>
