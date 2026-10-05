@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { JoinChatDialog } from '../components/join-chat-dialog/join-chat-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { ChatStore } from '../store/chat-store';
+import { PanelService } from '../../../core/services/panel-service';
 
 @Service()
 export class ChatService {
@@ -34,6 +35,8 @@ export class ChatService {
 
   private pendingDirectChats = new Set<string>();
   private store = inject(ChatStore);
+
+  private panelService = inject(PanelService);
   /**
    * Selects a chat to view its messages and participants.
    *
@@ -271,6 +274,8 @@ export class ChatService {
    * @returns An Observable indicating the success or failure of the operation.
    */
   deleteChat(chatId: string): Observable<unknown> {
+    this.router.navigate(['']);
+    this.panelService.closeAll();
     return this.backendCommunicator.deleteChat(chatId);
   }
 

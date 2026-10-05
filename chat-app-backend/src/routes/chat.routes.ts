@@ -86,7 +86,7 @@ router.get(
 /**
  * GET /api/chats/id
  * List one chat the user navigates to with URL.
- * 
+ *
  */
 
 router.get(
@@ -157,8 +157,6 @@ router.get(
     }
   },
 );
-    
-
 
 /**
  * POST /api/chats
@@ -683,7 +681,11 @@ router.delete(
 
     const chat = await prisma.chat.findUnique({
       where: { id: chatId },
-      select: { creatorId: true, type: true },
+      select: {
+        creatorId: true,
+        type: true,
+        participants: { select: { userId: true } },
+      },
     });
 
     if (!chat) {
@@ -703,8 +705,15 @@ router.delete(
 
     try {
       await prisma.chat.delete({ where: { id: chatId } });
-      getIo().socketsLeave(chatId);
-      getIo().to(chatId).emit("chat_deleted", { chatId });
+
+      const io = getIo();
+      if (chat.type === ChatType.PRIVATE_GROUP) {
+        io.to(chat.participants.map((p) => `user:${p.userId}`)).emit("chat_deleted", { chatId });
+      } else {
+        io.emit("chat_deleted", { chatId });
+      }
+
+      io.socketsLeave(chatId);
       res.json({ deleted: true });
     } catch (error) {
       console.error("Failed to delete chat:", error);
