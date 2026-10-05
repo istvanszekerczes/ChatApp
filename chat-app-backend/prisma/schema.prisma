@@ -8,16 +8,16 @@ generator client {
 }
 
 model User {
-  id           String            @id @default(uuid())
-  email        String            @unique
-  username     String            @unique
-  password     String?
-  googleId     String?           @unique
-  facebookId   String?           @unique
-  avatarColor  String?
-  lastOnline   DateTime?
-  createdAt    DateTime          @default(now())
-  
+  id          String    @id @default(uuid())
+  email       String    @unique
+  username    String    @unique
+  password    String?
+  googleId    String?   @unique
+  facebookId  String?   @unique
+  avatarColor String?
+  lastOnline  DateTime?
+  createdAt   DateTime  @default(now())
+
   // Relations
   messages     Message[]
   participants ChatParticipant[]
@@ -26,26 +26,25 @@ model User {
 
 // Enum for the 4 types of chats
 enum ChatType {
-  DIRECT          
-  PUBLIC_GROUP    
-  PRIVATE_GROUP   
-  PROTECTED_GROUP 
+  DIRECT
+  PUBLIC_GROUP
+  PRIVATE_GROUP
+  PROTECTED_GROUP
 }
 
 model Chat {
-  id           String            @id @default(uuid())
-  type         ChatType          @default(DIRECT)
-  name         String?           
-  password     String?           
-  avatarColor  String?
-  createdAt    DateTime          @default(now())
-  
-  creatorId    String?
-  creator      User?             @relation("CreatedChats", fields: [creatorId], references: [id], onDelete: SetNull)
-  
-  directKey    String?           @unique
-  lastMessageContent     String?
-  lastMessageSender     String?
+  id          String   @id @default(uuid())
+  type        ChatType @default(DIRECT)
+  name        String?
+  password    String?
+  avatarColor String?
+  createdAt   DateTime @default(now())
+
+  creatorId String?
+  creator   User?   @relation("CreatedChats", fields: [creatorId], references: [id], onDelete: SetNull)
+
+  directKey String? @unique
+
 
   // Relations
   messages     Message[]
@@ -56,9 +55,9 @@ model ChatParticipant {
   id     String @id @default(uuid())
   userId String
   chatId String
-  
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@unique([userId, chatId]) // A user can only be added to the same chat once
 }
@@ -67,11 +66,12 @@ model Message {
   id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
-  
+
   // Relations
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  chatId    String
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  chatId String
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
 }
