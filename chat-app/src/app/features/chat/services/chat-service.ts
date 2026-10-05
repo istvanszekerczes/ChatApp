@@ -1,6 +1,6 @@
 import { Service, NgZone, inject, signal, computed } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
-import { Chat, CreateChatPayload } from '../models/chat';
+import { Chat, ChatType, CreateChatPayload } from '../models/chat';
 import { User } from '../../users/models/user';
 import { SocketService } from '../../../core/services/socket-service';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
@@ -34,6 +34,8 @@ export class ChatService {
 
   private pendingDirectChats = new Set<string>();
   private store = inject(ChatStore);
+
+  activeFilter = signal<ChatType>('PUBLIC_GROUP');
   /**
    * Selects a chat to view its messages and participants.
    *
