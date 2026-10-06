@@ -330,16 +330,17 @@ export const ChatStore = signalStore(
         switchMap(() =>
           backendCommunicator.listenForLastMessage().pipe(
             tap((lastChat) => {
-              patchState(store, (state) => ({
-                chats: state.chats.map((chat) =>
-                  chat.id === lastChat.id
-                    ? {
-                        ...chat,
-                        lastMessage: lastChat.lastMessage,
-                      }
-                    : chat,
-                ),
-              }));
+              patchState(store, (state) => {
+                const existing = state.chats.find((chat) => chat.id === lastChat.id);
+                if (!existing) return {};
+
+                return {
+                  chats: [
+                    { ...existing, lastMessage: lastChat.lastMessage },
+                    ...state.chats.filter((chat) => chat.id !== lastChat.id),
+                  ],
+                };
+              });
             }),
           ),
         ),

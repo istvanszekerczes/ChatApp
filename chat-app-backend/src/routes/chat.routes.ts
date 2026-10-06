@@ -50,7 +50,8 @@ router.get(
           lastMessage: {
             select: {
               user: { select: { id: true, username: true }},
-              content: true
+              content: true,
+              createdAt: true
             }
           },
           participants: {
@@ -61,7 +62,7 @@ router.get(
           },
           _count: { select: { participants: true } },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { lastMessage: { createdAt: 'desc' } },
       });
 
       res.json({
