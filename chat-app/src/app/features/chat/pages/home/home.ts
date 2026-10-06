@@ -40,7 +40,7 @@ export class Home {
   readonly panels = inject(PanelService);
   leftExpanded = signal(false);
   rightExpanded = signal(false);
-  activeTab = signal<'groups' | 'direct'>('groups');
+  activeTab = this.chatService.activeTab;
 
   private route = inject(ActivatedRoute);
   private data = toSignal(this.route.data);
@@ -51,7 +51,10 @@ export class Home {
   constructor() {
     effect(() => {
       const chat = this.chat();
-      if (chat) untracked(() => this.chatService.selectChat(chat));
+      if (chat) untracked(() => {
+        this.chatService.selectChat(chat)
+        this.activeTab.set(chat.type === 'DIRECT' ? 'direct' : 'groups');
+      });
     });
   }
 

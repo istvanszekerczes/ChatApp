@@ -6,7 +6,7 @@
 
     <div class="sidebar-left-content">
       <app-profile></app-profile>
-      <app-chat-type-picker [activeTab]="activeTab()" (tabChange)="activeTab.set($event)" />
+      <app-chat-type-picker/>
       <app-create-chat [mode]="activeTab()" />
       <div class="chat-container">
         @if (activeTab() === 'groups') {

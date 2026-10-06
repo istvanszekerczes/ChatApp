@@ -1,5 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { ChatService } from '../../services/chat-service';
+import { Router } from '@angular/router';
 
 export type ChatTab = 'groups' | 'direct';
 
@@ -10,6 +12,17 @@ export type ChatTab = 'groups' | 'direct';
   styleUrl: './chat-type-picker.scss',
 })
 export class ChatTypePicker {
-  readonly activeTab = input<ChatTab>('groups');
-  readonly tabChange = output<ChatTab>();
+  private chatService = inject(ChatService);
+  private router = inject(Router);
+  readonly activeTab = this.chatService.activeTab;
+
+  setTab(tab: ChatTab) {  
+    if (this.activeTab() === tab) return;
+    this.activeTab.set(tab);
+    if (tab === 'groups') {
+      this.chatService.activeFilter.set('PUBLIC_GROUP');
+    }
+    this.router.navigate(['']);
+    this.chatService.closeActiveChat();
+  }
 }
