@@ -177,7 +177,9 @@ export class ChatService {
   createChat(payload: CreateChatPayload): Observable<Chat> {
     return this.backendCommunicator.createChat(payload).pipe(
       map((r) => r.chat),
-      tap((chat) => this.upsert(chat)),
+      tap((chat) => {
+        (this.upsert(chat), this.router.navigate(['/chat', chat.id]));
+      }),
     );
   }
 
