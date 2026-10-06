@@ -289,6 +289,10 @@ export class ChatService {
     this.store.listenForAddedToChat();
   }
 
+  listenForLastMessage() {
+    this.store.listenForLastMessage();
+  }
+
   /**
    * Closes the currently active chat, clearing its messages and participants.
    *

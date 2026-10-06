@@ -165,8 +165,31 @@ io.on("connection", (socket) => {
             user: { select: { username: true, avatarColor: true } },
           },
         });
+        const chat = await prisma.chat.update({
+          where: { id: data.chatId },
+          data: {
+            lastMessageId: savedMessage.id,
+          },
+          include: {
+            participants: { select: { userId: true } },
+            lastMessage: {
+              select: {
+                content: true,
+                user: { select: { id: true, username: true } },
+              },
+            },
+          },
+        });
 
         io.to(data.chatId).emit("receive_message", savedMessage);
+        if (chat.type === "PUBLIC_GROUP") {
+          io.emit("last_message", chat);
+        } else {
+          io.to(chat.participants.map((p) => `user:${p.userId}`)).emit(
+            "last_message",
+            chat,
+          );
+        }
       } catch (error) {
         console.error("Failed to save and send message:", error);
         socket.emit("error", { message: "Could not send message" });

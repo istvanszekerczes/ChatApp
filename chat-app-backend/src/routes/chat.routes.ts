@@ -6,6 +6,7 @@ import { requireAuth } from "../middleware/require-auth";
 import { getIo } from "../lib/socket";
 import { canAccessChat } from "../lib/chat-access";
 import { isValidAvatarColor } from "../lib/avatar-colors";
+import { truncate } from "fs";
 
 const router = Router();
 const MAX_PARTICIPANTS = 100;
@@ -46,6 +47,12 @@ router.get(
           creatorId: true,
           avatarColor: true,
           createdAt: true,
+          lastMessage: {
+            select: {
+              user: { select: { id: true, username: true }},
+              content: true
+            }
+          },
           participants: {
             select: {
               userId: true,
@@ -115,6 +122,12 @@ router.get(
           creatorId: true,
           avatarColor: true,
           createdAt: true,
+          lastMessage: {
+            select: {
+              user: { select: { id: true, username: true }},
+              content: true
+            }
+          },
           participants: {
             select: {
               userId: true,
