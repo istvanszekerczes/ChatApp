@@ -29,6 +29,9 @@
     &.active:hover {
         background-color: var(--color-border-hover);
     }
+    .last-message {
+        margin-bottom: 0;
+    }
 }
 
 .avatar {
@@ -81,4 +84,14 @@
         justify-content: center;
         padding: 0.25rem;
     }
+}
+
+.chat-last-sender::after {
+    content: ': ';
+}
+
+.chat-last-message {
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis; 
 }

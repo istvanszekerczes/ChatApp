@@ -7,15 +7,13 @@
     </span>
     <span class="chat-meta">
         <span class="chat-name">{{ chat().name }}</span>
-        @if (showCount() || showLock()) {
             <span class="chat-sub">
-                @if (showCount()) {
-                    {{ chat().participantCount }} members
-                }
                 @if (showLock()) {
                     <mat-icon class="inline-icon">lock</mat-icon>
-                }
+                } @else if (lastMessage()) {
+                        <span class="chat-last-sender">{{ lastMessage()?.user.username ?? '' | lastSender }}</span>
+                        <span class="chat-last-message"> {{ lastMessage()?.content ?? 'No messages yet' }}</span>
+                } 
             </span>
-        }
     </span>
 </button>

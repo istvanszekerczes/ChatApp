@@ -36,6 +36,7 @@ export class App implements OnInit {
           this.userService.loadUsers();
           this.userService.listenForNewUsers();
           this.userService.listenForUserUpdates();
+          this.chatService.listenForLastMessage();
         } else {
           this.socketService.disconnect();
           this.chatService.clearChats();

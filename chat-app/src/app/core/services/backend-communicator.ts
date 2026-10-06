@@ -28,6 +28,10 @@ export class BackendCommunicator {
     return this.socketService.on<Message>('receive_message');
   }
 
+  public listenForLastMessage() {
+    return this.socketService.on<Chat>('last_message');
+  }
+
   public refreshChatCount(chatId: string) {
     return this.http.get<{ chats: Chat[] }>(`${this.apiUrl}/chats`, {
       withCredentials: true,
