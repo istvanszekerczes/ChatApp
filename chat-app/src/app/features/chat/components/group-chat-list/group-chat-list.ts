@@ -34,6 +34,8 @@ export class GroupChatList {
 
   setFilter(type: ChatType) {
     if (this.activeFilter() === type) return;
+    this.router.navigate(['']);
+    this.chatService.closeActiveChat();
     this.activeFilter.set(type);
     this.closeIfHidden();
   }
@@ -49,7 +51,6 @@ export class GroupChatList {
   }
 
   selectChat(chat: Chat) {
-    
     if (chat.id === this.chatService.activeChatId()) {
       return;
     }
