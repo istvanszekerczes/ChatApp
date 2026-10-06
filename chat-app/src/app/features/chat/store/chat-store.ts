@@ -346,18 +346,4 @@ export const ChatStore = signalStore(
       ),
     ),
   })),
-
-  withHooks({
-    onInit(store) {
-      let hadMessages = false;
-      watchState(store, (state) => {
-        const active = state.chats.find((c) => c.id === state.activeChatId);
-        const hasMessages = !!active?.messages;
-        if (hadMessages && !hasMessages && state.activeChatId) {
-          console.trace('messages removed from active chat', active);
-        }
-        hadMessages = hasMessages;
-      });
-    },
-  }),
 );
