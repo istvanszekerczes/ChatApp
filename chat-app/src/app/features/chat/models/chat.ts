@@ -21,6 +21,7 @@ export interface Chat {
   messages: Message[];
   messagesLoading: boolean;
   participantsLoading: boolean;
+  lastMessage: Message;
 }
 
 /**

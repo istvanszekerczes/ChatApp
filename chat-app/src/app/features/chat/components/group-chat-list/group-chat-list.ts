@@ -18,7 +18,7 @@ export class GroupChatList {
   readonly loading = this.chatService.loading;
   readonly activeChat = this.chatService.activeChat;
   private router = inject(Router);
-  activeFilter = signal<ChatType>('PUBLIC_GROUP');
+  activeFilter = this.chatService.activeFilter;
   searchTerm = signal('');
 
   visibleChats = computed(() => {
@@ -53,6 +53,7 @@ export class GroupChatList {
     if (chat.id === this.chatService.activeChatId()) {
       return;
     }
+    this.chatService.activeFilter.set(chat.type);
     this.chatService.closeActiveChat();
     this.router.navigate(['/chat', chat.id]);
   }
