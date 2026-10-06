@@ -1,6 +1,6 @@
 import { Service, NgZone, inject, signal, computed } from '@angular/core';
 import { Observable, map, tap } from 'rxjs';
-import { Chat, CreateChatPayload } from '../models/chat';
+import { Chat, ChatType, CreateChatPayload } from '../models/chat';
 import { User } from '../../users/models/user';
 import { SocketService } from '../../../core/services/socket-service';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
@@ -37,6 +37,7 @@ export class ChatService {
   private store = inject(ChatStore);
 
   private panelService = inject(PanelService);
+  activeFilter = signal<ChatType>('PUBLIC_GROUP');
   /**
    * Selects a chat to view its messages and participants.
    *
@@ -292,6 +293,10 @@ export class ChatService {
     this.store.listenForChatDeleted();
     this.store.listenForRemovedFromChat();
     this.store.listenForAddedToChat();
+  }
+
+  listenForLastMessage() {
+    this.store.listenForLastMessage();
   }
 
   /**

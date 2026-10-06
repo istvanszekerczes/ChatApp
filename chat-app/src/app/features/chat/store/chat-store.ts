@@ -13,7 +13,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { tapResponse } from '@ngrx/operators';
- import { watchState, withHooks } from '@ngrx/signals';
+import { watchState, withHooks } from '@ngrx/signals';
 
 type ChatState = {
   activeChatId: string;
@@ -315,6 +315,27 @@ export const ChatStore = signalStore(
                         messages: chat.messages.some((m) => m.id === msg.id)
                           ? chat.messages
                           : [...chat.messages, msg],
+                      }
+                    : chat,
+                ),
+              }));
+            }),
+          ),
+        ),
+      ),
+    ),
+
+    listenForLastMessage: rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          backendCommunicator.listenForLastMessage().pipe(
+            tap((lastChat) => {
+              patchState(store, (state) => ({
+                chats: state.chats.map((chat) =>
+                  chat.id === lastChat.id
+                    ? {
+                        ...chat,
+                        lastMessage: lastChat.lastMessage,
                       }
                     : chat,
                 ),
