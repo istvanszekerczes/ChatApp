@@ -176,6 +176,7 @@ io.on("connection", (socket) => {
               select: {
                 content: true,
                 user: { select: { id: true, username: true } },
+                createdAt: true,
               },
             },
           },
