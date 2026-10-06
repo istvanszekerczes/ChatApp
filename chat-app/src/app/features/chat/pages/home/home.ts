@@ -51,6 +51,7 @@ export class Home {
   constructor() {
     effect(() => {
       const chat = this.chat();
+      this.chatService.activeFilter.set(chat.type);
       if (chat) untracked(() => this.chatService.selectChat(chat));
     });
   }
