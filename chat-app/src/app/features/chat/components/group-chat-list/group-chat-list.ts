@@ -49,6 +49,7 @@ export class GroupChatList {
   }
 
   selectChat(chat: Chat) {
+    
     if (chat.id === this.chatService.activeChatId()) {
       return;
     }
