@@ -49,6 +49,10 @@ export class GroupChatList {
   }
 
   selectChat(chat: Chat) {
+    
+    if (chat.id === this.chatService.activeChatId()) {
+      return;
+    }
     this.chatService.activeFilter.set(chat.type);
     this.chatService.closeActiveChat();
     this.router.navigate(['/chat', chat.id]);
