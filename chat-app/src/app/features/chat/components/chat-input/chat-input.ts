@@ -16,6 +16,10 @@ export class ChatInput {
 
   send = output<string>();
 
+  ngOnInit() {
+    this.messageText = '';
+  }
+
   /**
    * Emits the trimmed message text via the `send` output and clears the input.
    * Does nothing if messageText is empty or only whitespace.
