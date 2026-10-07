@@ -19,9 +19,10 @@ model User {
   createdAt   DateTime  @default(now())
 
   // Relations
-  messages     Message[]
-  participants ChatParticipant[]
-  createdChats Chat[]            @relation("CreatedChats")
+  messages        Message[]
+  participants    ChatParticipant[]
+  createdChats    Chat[]            @relation("CreatedChats")
+  lastSeenHelpers LastSeenHelper[]
 }
 
 // Enum for the 4 types of chats
@@ -49,8 +50,9 @@ model Chat {
   lastMessage   Message? @relation("LastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
 
   // Relations
-  messages     Message[]
-  participants ChatParticipant[]
+  messages        Message[]
+  participants    ChatParticipant[]
+  lastSeenHelpers LastSeenHelper[]
 }
 
 model ChatParticipant {
@@ -77,4 +79,14 @@ model Message {
   chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   lastMessage Chat? @relation("LastMessage")
+}
+
+model LastSeenHelper {
+  id                 String   @id @default(uuid())
+  userId             String
+  chatId             String
+  lastSeendTimestamp DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 }
