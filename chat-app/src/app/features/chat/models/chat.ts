@@ -22,6 +22,8 @@ export interface Chat {
   messagesLoading: boolean;
   participantsLoading: boolean;
   lastMessage: Message;
+  lastSeenTimestamp: string;
+  unreadCount: number;
 }
 
 /**
