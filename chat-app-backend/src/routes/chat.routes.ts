@@ -61,6 +61,11 @@ router.get(
             },
           },
           _count: { select: { participants: true } },
+          lastSeenHelpers: {
+            select: {
+              lastSeenTimestamp: true
+            }
+          }
         },
         orderBy: { lastMessage: { createdAt: 'desc' } },
       });
