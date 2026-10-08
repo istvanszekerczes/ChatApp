@@ -124,6 +124,11 @@ io.on("connection", (socket) => {
       return;
     }
     socket.join(chatId);
+    await prisma.lastSeenHelper.upsert({
+      where: { userId_chatId: { userId, chatId } },
+      update: { lastSeenTimestamp: new Date() },
+      create: { userId, chatId, lastSeenTimestamp: new Date() },
+    });
     console.log(`Socket ${socket.id} joined room: ${chatId}`);
   });
 

@@ -85,8 +85,10 @@ model LastSeenHelper {
   id                 String   @id @default(uuid())
   userId             String
   chatId             String
-  lastSeendTimestamp DateTime @default(now())
+  lastSeenTimestamp DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chatId])
 }
