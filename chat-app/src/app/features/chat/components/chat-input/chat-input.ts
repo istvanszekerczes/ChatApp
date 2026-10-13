@@ -1,4 +1,4 @@
-import { Component, OnInit, output } from '@angular/core';
+import { Component, ElementRef, OnInit, output, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +14,7 @@ import {MatInputModule} from '@angular/material/input';
 export class ChatInput implements OnInit {
   messageText = '';
   showEmojiPicker = false;
+  messageInput = viewChild.required<ElementRef<HTMLTextAreaElement>>('messageInput');
 
   send = output<string>();
 
@@ -41,7 +42,10 @@ export class ChatInput implements OnInit {
   }
 
   onEmojiSelect(emoji: string) {
-    this.messageText += emoji;
+    const textarea = this.messageInput().nativeElement;
+    textarea.setRangeText(emoji, textarea.selectionStart, textarea.selectionEnd, 'end');
+    this.messageText = textarea.value;
+    textarea.focus();
     this.showEmojiPicker = false;
   }
 }

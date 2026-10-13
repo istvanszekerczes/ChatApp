@@ -6,6 +6,7 @@
     <app-emoji-picker (emojiSelect)="onEmojiSelect($event)" (close)="showEmojiPicker = false" />
   }
   <textarea
+    #messageInput
     id="messageInput"
     matInput
     cdkTextareaAutosize
