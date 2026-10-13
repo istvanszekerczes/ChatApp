@@ -32,8 +32,15 @@ export class ChatInput implements OnInit {
     this.messageText = '';
   }
 
+  onEnter(event: Event) {
+    const e = event as KeyboardEvent;
+    if (e.shiftKey) return;
+    e.preventDefault();
+    this.onSend();
+  }
+
   onEmojiSelect(emoji: string) {
     this.messageText += emoji;
     this.showEmojiPicker = false;
   }
-} 
+}
