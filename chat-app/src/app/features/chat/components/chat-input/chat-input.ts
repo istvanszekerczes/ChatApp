@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +10,7 @@ import { EmojiPicker } from '../../../../shared/components/emoji-picker/emoji-pi
   templateUrl: './chat-input.html',
   styleUrl: './chat-input.scss',
 })
-export class ChatInput {
+export class ChatInput implements OnInit {
   messageText = '';
   showEmojiPicker = false;
 
