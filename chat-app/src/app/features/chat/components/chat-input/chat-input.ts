@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { EmojiPicker } from '../../../../shared/components/emoji-picker/emoji-picker';
-import {MatInputModule} from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-chat-input',
@@ -14,8 +14,7 @@ import {MatInputModule} from '@angular/material/input';
 export class ChatInput implements OnInit {
   messageText = '';
   showEmojiPicker = false;
-  messageInput = viewChild.required<ElementRef<HTMLTextAreaElement>>('messageInput');
-
+  messageInput = viewChild.required<MatInput, ElementRef<HTMLTextAreaElement>>(MatInput, { read: ElementRef });
   send = output<string>();
 
   ngOnInit() {
