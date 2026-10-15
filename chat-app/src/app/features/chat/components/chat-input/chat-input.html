@@ -7,8 +7,11 @@
   }
   <textarea
     id="messageInput"
-    rows="1"
-    type="text"
+    matInput
+    cdkTextareaAutosize
+    #autosize="cdkTextareaAutosize"
+    cdkAutosizeMinRows="1"
+    cdkAutosizeMaxRows="5"
     placeholder="Type a message..."
     [(ngModel)]="messageText"
     (keydown.enter)="onEnter($event)"

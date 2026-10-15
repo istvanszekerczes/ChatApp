@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { EmojiPicker } from '../../../../shared/components/emoji-picker/emoji-picker';
+import {MatInputModule} from '@angular/material/input';
 
 @Component({
   selector: 'app-chat-input',
-  imports: [FormsModule, MatIconModule, MatButtonModule, EmojiPicker],
+  imports: [FormsModule, MatIconModule, MatButtonModule, EmojiPicker, MatInputModule],
   templateUrl: './chat-input.html',
   styleUrl: './chat-input.scss',
 })
