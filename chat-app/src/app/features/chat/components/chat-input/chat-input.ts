@@ -1,9 +1,9 @@
-import { Component, OnInit, output } from '@angular/core';
+import { Component, ElementRef, OnInit, output, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { EmojiPicker } from '../../../../shared/components/emoji-picker/emoji-picker';
-import {MatInputModule} from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-chat-input',
@@ -14,7 +14,7 @@ import {MatInputModule} from '@angular/material/input';
 export class ChatInput implements OnInit {
   messageText = '';
   showEmojiPicker = false;
-
+  messageInput = viewChild.required<MatInput, ElementRef<HTMLTextAreaElement>>(MatInput, { read: ElementRef });
   send = output<string>();
 
   ngOnInit() {
@@ -41,7 +41,10 @@ export class ChatInput implements OnInit {
   }
 
   onEmojiSelect(emoji: string) {
-    this.messageText += emoji;
+    const textarea = this.messageInput().nativeElement;
+    textarea.setRangeText(emoji, textarea.selectionStart, textarea.selectionEnd, 'end');
+    this.messageText = textarea.value;
+    textarea.focus();
     this.showEmojiPicker = false;
   }
 }

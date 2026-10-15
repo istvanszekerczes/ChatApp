@@ -6,6 +6,7 @@
     <app-emoji-picker (emojiSelect)="onEmojiSelect($event)" (close)="showEmojiPicker = false" />
   }
   <textarea
+    #messageInput
     id="messageInput"
     matInput
     cdkTextareaAutosize
@@ -15,7 +16,7 @@
     placeholder="Type a message..."
     [(ngModel)]="messageText"
     (keydown.enter)="onEnter($event)"
->
+  >
   </textarea>
   <button
     mat-icon-button
