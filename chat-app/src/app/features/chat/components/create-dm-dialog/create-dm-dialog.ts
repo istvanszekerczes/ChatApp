@@ -8,6 +8,7 @@ import { UserService } from '../../../users/services/user-service';
 import { AuthService } from '../../../../core/services/auth-service';
 import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
 import { User } from '../../../users/models/user';
+import { ChatCreationFrame } from '../chat-creation-frame/chat-creation-frame';
 
 @Component({
   selector: 'app-create-dm-dialog',
@@ -19,7 +20,7 @@ export class CreateDmDialog {
   private chatService = inject(ChatService);
   private userService = inject(UserService);
   private authService = inject(AuthService);
-  private dialogRef = inject(MatDialogRef<CreateDmDialog>);
+  private dialogRef = inject(MatDialogRef<ChatCreationFrame>);
 
   private currentUser = toSignal(this.authService.currentUser$);
 

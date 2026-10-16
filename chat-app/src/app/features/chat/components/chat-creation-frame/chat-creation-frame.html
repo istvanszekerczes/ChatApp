@@ -16,5 +16,11 @@
     </div>
   </header>
 
-  <div class="dialog-body"></div>
+  <div class="dialog-body">
+    @if (chatTab() === 'groups') {
+      <app-create-chat-dialog></app-create-chat-dialog>
+    } @else {
+      <app-create-dm-dialog></app-create-dm-dialog>
+    }
+  </div>
 </div>
