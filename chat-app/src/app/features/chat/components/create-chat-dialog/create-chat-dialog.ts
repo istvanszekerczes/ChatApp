@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -7,6 +7,15 @@ import { ColorPicker } from '../../../../shared/components/color-picker/color-pi
 import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
 import { Chat, ChatType } from '../../models/chat';
 import { User } from '../../../users/models/user';
+import { ChatCreationFrame } from '../chat-creation-frame/chat-creation-frame';
+
+export interface CreateGroupchatPayload {
+  type: string,
+  name: string,
+  avatarColor: string,
+  selectedUserIds: Signal<Set<string>>,
+  password: string,
+}
 
 @Component({
   selector: 'app-create-chat-dialog',
@@ -16,7 +25,7 @@ import { User } from '../../../users/models/user';
 })
 export class CreateChatDialog {
   private chatService = inject(ChatService);
-  private dialogRef = inject(MatDialogRef<CreateChatDialog, Chat>);
+  private dialogRef = inject(MatDialogRef<ChatCreationFrame, Chat>);
 
   readonly chatTypes: { value: ChatType; label: string; hint: string }[] = [
     { value: 'PUBLIC_GROUP', label: 'Public', hint: 'Anyone can find and join' },

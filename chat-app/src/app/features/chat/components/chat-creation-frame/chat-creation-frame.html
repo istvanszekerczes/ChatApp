@@ -1,0 +1,26 @@
+<div class="dialog">
+  <header class="dialog-header">
+    <h2>New chat</h2>
+    <button class="btn-icon" (click)="close()" aria-label="Close">
+      <mat-icon>close</mat-icon>
+    </button>
+    <div class="button-container">
+      <button [class.active]="chatTab() === 'groups'" (click)="switchTab('groups')">
+        <mat-icon>group</mat-icon>
+        <span>Group Chats</span>
+      </button>
+      <button [class.active]="chatTab() === 'direct'" (click)="switchTab('direct')">
+        <mat-icon>person</mat-icon>
+        <span>Direct Messages</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="dialog-body">
+    @if (chatTab() === 'groups') {
+      <app-create-chat-dialog></app-create-chat-dialog>
+    } @else {
+      <app-create-dm-dialog></app-create-dm-dialog>
+    }
+  </div>
+</div>

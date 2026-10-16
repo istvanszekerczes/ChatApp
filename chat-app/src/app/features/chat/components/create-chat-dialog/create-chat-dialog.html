@@ -1,11 +1,4 @@
 <div class="dialog">
-    <header class="dialog-header">
-        <h2>New group chat</h2>
-        <button class="btn-icon" (click)="close()" aria-label="Close">
-            <mat-icon>close</mat-icon>
-        </button>
-    </header>
-
     <div class="dialog-body">
         <div class="form-pane">
             <div class="avatar-row">
@@ -80,11 +73,10 @@
     @if (errorMessage()) {
         <p class="error">{{ errorMessage() }}</p>
     }
-
     <footer class="dialog-footer">
         <button class="btn-secondary" (click)="close()">Cancel</button>
         <button class="btn-primary" [disabled]="submitting()" (click)="submit()">
-            {{ submitting() ? 'Creating…' : 'Create group' }}
+            {{ submitting() ? 'Creating…' : 'New chat' }}
         </button>
     </footer>
 </div>
