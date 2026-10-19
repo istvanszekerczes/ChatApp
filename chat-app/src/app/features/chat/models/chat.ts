@@ -1,7 +1,7 @@
 import { User } from "../../users/models/user";
 import { Message } from "./message";
 
-export type ChatType = 'DIRECT' | 'PUBLIC_GROUP' | 'PRIVATE_GROUP' | 'PROTECTED_GROUP';
+export type ChatType = 'DIRECT' | 'PUBLIC_GROUP' | 'PRIVATE_GROUP' | 'PROTECTED_GROUP' | '';
 
 /**
  * Represents a chat entity in the application.

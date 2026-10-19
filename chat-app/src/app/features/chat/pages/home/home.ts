@@ -12,7 +12,7 @@ import { GroupChatList } from '../../components/group-chat-list/group-chat-list'
 import { ChatTypePicker } from '../../components/chat-type-picker/chat-type-picker';
 import { DmList } from '../../components/dm-list/dm-list';
 import { ErrorDialog } from '../../../../shared/components/error-dialog/error-dialog';
-
+import { ChatList } from '../../components/chat-list/chat-list';
 import { PanelService } from '../../../../core/services/panel-service';
 import { ChatService } from '../../../chat/services/chat-service';
 
@@ -24,12 +24,10 @@ import { Chat } from '../../models/chat';
   imports: [
     Profile,
     ChatArea,
-    CreateChat,
-    DmList,
     UserList,
-    GroupChatList,
     MatIconModule,
     ChatTypePicker,
+    ChatList
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',
@@ -53,7 +51,6 @@ export class Home {
       const chat = this.chat();
       if (chat) untracked(() => {
         this.chatService.selectChat(chat)
-        this.activeTab.set(chat.type === 'DIRECT' ? 'direct' : 'groups');
       });
     });
   }
@@ -75,7 +72,6 @@ export class Home {
   }
 
   onStartDm(user: User) {
-    this.activeTab.set('direct');
     this.chatService.openDirectChat(user.id);
   }
 }
