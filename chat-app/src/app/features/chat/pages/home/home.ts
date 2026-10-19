@@ -6,11 +6,8 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { Profile } from '../../../users/components/profile/profile';
 import { ChatArea } from '../../components/chat-area/chat-area';
-import { CreateChat } from '../../components/create-chat/create-chat';
 import { UserList } from '../../../users/components/user-list/user-list';
-import { GroupChatList } from '../../components/group-chat-list/group-chat-list';
 import { ChatTypePicker } from '../../components/chat-type-picker/chat-type-picker';
-import { DmList } from '../../components/dm-list/dm-list';
 import { ErrorDialog } from '../../../../shared/components/error-dialog/error-dialog';
 import { ChatList } from '../../components/chat-list/chat-list';
 import { PanelService } from '../../../../core/services/panel-service';
