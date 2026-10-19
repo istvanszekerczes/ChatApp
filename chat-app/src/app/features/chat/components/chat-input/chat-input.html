@@ -5,13 +5,18 @@
   @if (showEmojiPicker) {
     <app-emoji-picker (emojiSelect)="onEmojiSelect($event)" (close)="showEmojiPicker = false" />
   }
-  <input
+  <textarea
     id="messageInput"
-    type="text"
+    matInput
+    cdkTextareaAutosize
+    #autosize="cdkTextareaAutosize"
+    cdkAutosizeMinRows="1"
+    cdkAutosizeMaxRows="5"
     placeholder="Type a message..."
     [(ngModel)]="messageText"
-    (keyup.enter)="onSend()"
-  />
+    (keydown.enter)="onEnter($event)"
+>
+  </textarea>
   <button
     mat-icon-button
     [disabled]="!messageText.trim()"
