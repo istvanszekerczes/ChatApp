@@ -35,7 +35,6 @@ export class Home {
   readonly panels = inject(PanelService);
   leftExpanded = signal(false);
   rightExpanded = signal(false);
-  activeTab = this.chatService.activeTab;
 
   private route = inject(ActivatedRoute);
   private data = toSignal(this.route.data);

@@ -5,6 +5,7 @@ import { ChatService } from '../../services/chat-service';
 import { Chat, ChatType } from '../../models/chat';
 import { ChatItem } from '../chat-item/chat-item';
 import { Router } from '@angular/router';
+import { ChatDatasource } from '../../services/chat-datasource';
 
 @Component({
   selector: 'app-chat-list',
@@ -23,7 +24,9 @@ export class ChatList {
   activeTab = this.chatService.activeTab;
   private previousTab = this.activeTab();
 
-  constructor () {
+  private chatDatasource = inject(ChatDatasource);
+
+  constructor() {
     effect(() => {
       const tab = this.activeTab();
       if (tab === this.previousTab) return;
@@ -36,22 +39,10 @@ export class ChatList {
     });
   }
 
-  visibleChats = computed(() => {
-    const filter = this.activeFilter();
-    const tab = this.activeTab();
-    const term = this.searchTerm().trim().toLowerCase();
-
-    return this.chatService.chats().filter((chat) => {
-      if (filter && tab !== 'direct' && chat.type !== filter) return false;
-      if (tab === 'groups' && chat.type === 'DIRECT') return false;
-      if (tab === 'direct' && chat.type !== 'DIRECT') return false;
-      if (term && !(chat.name ?? '').toLowerCase().includes(term)) return false;
-      return true;
-    });
-});
-
+  visibleChats = computed(() => this.chatDatasource.getVisibleChats(this.searchTerm()));
+  
   setFilter(type: ChatType) {
-    if (this.activeFilter() === type)  {
+    if (this.activeFilter() === type) {
       this.activeFilter.set(null);
       return;
     }
