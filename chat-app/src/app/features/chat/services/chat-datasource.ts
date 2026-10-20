@@ -1,7 +1,7 @@
 import { Service, inject } from '@angular/core';
 import { ChatService } from './chat-service';
 
-@Service()
+@Service({ autoProvided: false })
 export class ChatDatasource {
   private chatService = inject(ChatService);
   private activeTab = this.chatService.activeTab;

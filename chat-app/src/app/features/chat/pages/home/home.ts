@@ -12,6 +12,7 @@ import { ErrorDialog } from '../../../../shared/components/error-dialog/error-di
 import { ChatList } from '../../components/chat-list/chat-list';
 import { PanelService } from '../../../../core/services/panel-service';
 import { ChatService } from '../../../chat/services/chat-service';
+import { ChatDatasource } from '../../services/chat-datasource';
 
 import { User } from '../../../users/models/user';
 import { Chat } from '../../models/chat';
@@ -27,6 +28,7 @@ import { Chat } from '../../models/chat';
     ChatList
   ],
   templateUrl: './home.html',
+  providers: [ChatDatasource],
   styleUrl: './home.scss',
 })
 export class Home {
