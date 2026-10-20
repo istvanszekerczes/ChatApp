@@ -30,7 +30,7 @@ export class ChatList {
       this.previousTab = tab;
 
       untracked(() => {
-        this.activeFilter.set('');
+        this.activeFilter.set(null);
         this.closeIfHidden();
       });
     });
@@ -52,7 +52,7 @@ export class ChatList {
 
   setFilter(type: ChatType) {
     if (this.activeFilter() === type)  {
-      this.activeFilter.set('');
+      this.activeFilter.set(null);
       return;
     }
     this.router.navigate(['']);
