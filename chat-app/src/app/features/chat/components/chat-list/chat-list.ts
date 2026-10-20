@@ -37,17 +37,17 @@ export class ChatList {
   }
 
   visibleChats = computed(() => {
-  const filter = this.activeFilter();
-  const tab = this.activeTab();
-  const term = this.searchTerm().trim().toLowerCase();
+    const filter = this.activeFilter();
+    const tab = this.activeTab();
+    const term = this.searchTerm().trim().toLowerCase();
 
-  return this.chatService.chats().filter((chat) => {
-    if (filter && tab !== 'direct' && chat.type !== filter) return false;
-    if (tab === 'groups' && chat.type === 'DIRECT') return false;
-    if (tab === 'direct' && chat.type !== 'DIRECT') return false;
-    if (term && !(chat.name ?? '').toLowerCase().includes(term)) return false;
-    return true;
-  });
+    return this.chatService.chats().filter((chat) => {
+      if (filter && tab !== 'direct' && chat.type !== filter) return false;
+      if (tab === 'groups' && chat.type === 'DIRECT') return false;
+      if (tab === 'direct' && chat.type !== 'DIRECT') return false;
+      if (term && !(chat.name ?? '').toLowerCase().includes(term)) return false;
+      return true;
+    });
 });
 
   setFilter(type: ChatType) {
