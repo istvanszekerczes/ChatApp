@@ -39,8 +39,8 @@ export class ChatService {
 
   private panelService = inject(PanelService);
   
-  activeFilter = signal<ChatType>('PUBLIC_GROUP');
-  activeTab = signal<ChatTab>('groups');
+  activeFilter = signal<ChatType>(null);
+  activeTab = signal<ChatTab>('all');
   /**
    * Selects a chat to view its messages and participants.
    *

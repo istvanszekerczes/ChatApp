@@ -1,27 +1,3 @@
-<div class="group-chat-container">
-    <button
-        class="public-chat"
-        [class.active]="activeFilter() === 'PUBLIC_GROUP'"
-        (click)="setFilter('PUBLIC_GROUP')">
-        <mat-icon>public</mat-icon>
-        <span>Public Chats</span>
-    </button>
-    <button
-        class="private-chat"
-        [class.active]="activeFilter() === 'PRIVATE_GROUP'"
-        (click)="setFilter('PRIVATE_GROUP')">
-        <mat-icon>lock_open</mat-icon>
-        <span>Private Chats</span>
-    </button>
-    <button
-        class="protected-chat"
-        [class.active]="activeFilter() === 'PROTECTED_GROUP'"
-        (click)="setFilter('PROTECTED_GROUP')">
-        <mat-icon>lock</mat-icon>
-        <span>Protected Chats</span>
-    </button>
-</div>
-
 <div class="search-container">
     <mat-icon class="search-icon">search</mat-icon>
     <input
@@ -34,6 +10,33 @@
             <mat-icon>close</mat-icon>
         </button>
     }
+</div>
+
+<div class="filter-container" [class.locked]="activeTab() === 'direct'">
+    <button
+        class="public-chat"
+        [class.active]="activeFilter() === 'PUBLIC_GROUP'"
+        [disabled]="activeTab() === 'direct'"
+        (click)="setFilter('PUBLIC_GROUP')">
+        <mat-icon>public</mat-icon>
+        <span>Public</span>
+    </button>
+    <button
+        class="private-chat"
+        [class.active]="activeFilter() === 'PRIVATE_GROUP'"
+        [disabled]="activeTab() === 'direct'"
+        (click)="setFilter('PRIVATE_GROUP')">
+        <mat-icon>lock_open</mat-icon>
+        <span>Private</span>
+    </button>
+    <button
+        class="protected-chat"
+        [class.active]="activeFilter() === 'PROTECTED_GROUP'"
+        [disabled]="activeTab() === 'direct'"
+        (click)="setFilter('PROTECTED_GROUP')">
+        <mat-icon>lock</mat-icon>
+        <span>Protected</span>
+    </button>
 </div>
 
 <ul class="chat-list">

@@ -6,15 +6,13 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { Profile } from '../../../users/components/profile/profile';
 import { ChatArea } from '../../components/chat-area/chat-area';
-import { CreateChat } from '../../components/create-chat/create-chat';
 import { UserList } from '../../../users/components/user-list/user-list';
-import { GroupChatList } from '../../components/group-chat-list/group-chat-list';
 import { ChatTypePicker } from '../../components/chat-type-picker/chat-type-picker';
-import { DmList } from '../../components/dm-list/dm-list';
 import { ErrorDialog } from '../../../../shared/components/error-dialog/error-dialog';
-
+import { ChatList } from '../../components/chat-list/chat-list';
 import { PanelService } from '../../../../core/services/panel-service';
 import { ChatService } from '../../../chat/services/chat-service';
+import { ChatDatasource } from '../../services/chat-datasource';
 
 import { User } from '../../../users/models/user';
 import { Chat } from '../../models/chat';
@@ -24,14 +22,13 @@ import { Chat } from '../../models/chat';
   imports: [
     Profile,
     ChatArea,
-    CreateChat,
-    DmList,
     UserList,
-    GroupChatList,
     MatIconModule,
     ChatTypePicker,
+    ChatList
   ],
   templateUrl: './home.html',
+  providers: [ChatDatasource],
   styleUrl: './home.scss',
 })
 export class Home {
@@ -40,7 +37,6 @@ export class Home {
   readonly panels = inject(PanelService);
   leftExpanded = signal(false);
   rightExpanded = signal(false);
-  activeTab = this.chatService.activeTab;
 
   private route = inject(ActivatedRoute);
   private data = toSignal(this.route.data);
@@ -53,7 +49,6 @@ export class Home {
       const chat = this.chat();
       if (chat) untracked(() => {
         this.chatService.selectChat(chat)
-        this.activeTab.set(chat.type === 'DIRECT' ? 'direct' : 'groups');
       });
     });
   }
@@ -75,7 +70,6 @@ export class Home {
   }
 
   onStartDm(user: User) {
-    this.activeTab.set('direct');
     this.chatService.openDirectChat(user.id);
   }
 }
