@@ -6,8 +6,6 @@
 
   button {
     display: flex;
-    align-items: center;
-    width: 90%;
     color: white;
     background-color: var(--color-surface);
     padding: 0.5rem 1rem;
@@ -84,6 +82,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .btn-logout {
+    margin-right: auto;
+    margin-left: 1rem;
   }
 }
 
