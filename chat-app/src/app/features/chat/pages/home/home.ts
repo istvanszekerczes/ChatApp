@@ -13,6 +13,7 @@ import { ChatList } from '../../components/chat-list/chat-list';
 import { PanelService } from '../../../../core/services/panel-service';
 import { ChatService } from '../../../chat/services/chat-service';
 import { ChatDatasource } from '../../services/chat-datasource';
+import { CreateChat } from '../../components/create-chat/create-chat';
 
 import { User } from '../../../users/models/user';
 import { Chat } from '../../models/chat';
@@ -25,7 +26,8 @@ import { Chat } from '../../models/chat';
     UserList,
     MatIconModule,
     ChatTypePicker,
-    ChatList
+    ChatList,
+    CreateChat
   ],
   templateUrl: './home.html',
   providers: [ChatDatasource],

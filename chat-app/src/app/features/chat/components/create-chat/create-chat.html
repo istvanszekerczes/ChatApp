@@ -1,7 +1,3 @@
-<div class="button-container">
-    <button class="create-chat-button" (click)="openDialog()">
-        <mat-icon>add</mat-icon>
-        <span>{{ mode() === 'direct' ? 'New Message' : 'Create Chat' }}</span>
-    </button>
-</div>
-<div class="divider"></div>
+<button class="create-chat-button" (click)="openDialog()" aria-label="Create chat">
+  <mat-icon>add</mat-icon>
+</button>

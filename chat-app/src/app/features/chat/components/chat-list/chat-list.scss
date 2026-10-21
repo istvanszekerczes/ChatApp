@@ -36,7 +36,9 @@
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    width: 90%;
+    justify-content: center; // optional: center icon + label
+    flex: 1 1 0;             // equal widths
+    min-width: 0;            // allow shrinking below content size
     color: white;
     background-color: var(--color-surface);
     padding: 0.5rem 1rem;
