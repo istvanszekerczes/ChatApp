@@ -1,17 +1,17 @@
 <div class="button-container">
     <button
         [class.active]="activeTab() === 'all'"
-        (click)="setTab('all')">
+        (click)="setTab(ChatTab.All)">
         <span>All</span>
     </button>
     <button
         [class.active]="activeTab() === 'groups'"
-        (click)="setTab('groups')">
+        (click)="setTab(ChatTab.Groups)">
         <span>Groups</span>
     </button>
     <button
         [class.active]="activeTab() === 'direct'"
-        (click)="setTab('direct')">
+        (click)="setTab(ChatTab.Direct)">
         <span>Direct</span>
     </button>
 </div>

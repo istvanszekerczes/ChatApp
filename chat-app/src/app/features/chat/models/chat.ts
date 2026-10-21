@@ -3,6 +3,11 @@ import { Message } from "./message";
 
 export type ChatType = 'DIRECT' | 'PUBLIC_GROUP' | 'PRIVATE_GROUP' | 'PROTECTED_GROUP' | null;
 
+export enum ChatTab {
+  Direct = 'direct',
+  Groups = 'groups',
+  All = 'all'
+}
 /**
  * Represents a chat entity in the application.
  * It contains information about the chat's ID, type, name, avatar color, creator, membership status, and participant count.

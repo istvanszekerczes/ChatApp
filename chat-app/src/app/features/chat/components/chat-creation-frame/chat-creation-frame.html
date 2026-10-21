@@ -5,11 +5,11 @@
       <mat-icon>close</mat-icon>
     </button>
     <div class="button-container">
-      <button [class.active]="chatTab() === 'groups'" (click)="switchTab('groups')">
+      <button [class.active]="chatTab() === 'groups'" (click)="switchTab(ChatTab.Groups)">
         <mat-icon>group</mat-icon>
         <span>Group Chats</span>
       </button>
-      <button [class.active]="chatTab() === 'direct'" (click)="switchTab('direct')">
+      <button [class.active]="chatTab() === 'direct'" (click)="switchTab(ChatTab.Direct)">
         <mat-icon>person</mat-icon>
         <span>Direct Messages</span>
       </button>
