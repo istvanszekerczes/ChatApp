@@ -9,14 +9,6 @@ import { Chat, ChatType } from '../../models/chat';
 import { User } from '../../../users/models/user';
 import { ChatCreationFrame } from '../chat-creation-frame/chat-creation-frame';
 
-export interface CreateGroupchatPayload {
-  type: string,
-  name: string,
-  avatarColor: string,
-  selectedUserIds: Signal<Set<string>>,
-  password: string,
-}
-
 @Component({
   selector: 'app-create-chat-dialog',
   imports: [FormsModule, MatIconModule, ColorPicker, InitialPipe],

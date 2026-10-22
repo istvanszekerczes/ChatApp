@@ -9,7 +9,7 @@
         <ul class="user-list">
             @for (u of candidates(); track u.id) {
                 <li>
-                    <button class="user-item"  [class.active]="selectedUser()?.id === u.id" (click)="selectUser(u)">
+                    <button class="user-item"  [class.active]="isSelected(u)" (click)="selectUser(u)">
                         <span class="avatar" [style.background-color]="u.avatarColor || '#3b82f6'">
                             {{ u.username | initial }}
                         </span>

@@ -45,4 +45,8 @@ export class CreateDmDialog {
   getSelectedUser() {
     return this.selectedUser();
   }
+
+  isSelected(u: User) {
+    return this.selectedUser()?.id === u.id;
+  }
 }
