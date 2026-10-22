@@ -6,7 +6,6 @@ import { ChatTab } from '../../models/chat';
 import { CreateChatDialog } from '../create-chat-dialog/create-chat-dialog';
 import { CreateDmDialog } from '../create-dm-dialog/create-dm-dialog';
 import { ChatService } from '../../services/chat-service';
-import { User } from '../../../users/models/user';
 
 @Component({
   selector: 'app-chat-creation-frame',
@@ -30,7 +29,7 @@ export class ChatCreationFrame {
   switchTab(selectedTab: ChatTab) {
     this.chatTab.set(selectedTab);
   }
-
+  
   close() {
     this.dialogRef.close();
   }

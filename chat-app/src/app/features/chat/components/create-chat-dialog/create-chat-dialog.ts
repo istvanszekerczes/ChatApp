@@ -79,4 +79,8 @@ export class CreateChatDialog {
       }),
     };
   }
+
+  clearError() {
+    this.errorMessage.set('');
+  }
 }

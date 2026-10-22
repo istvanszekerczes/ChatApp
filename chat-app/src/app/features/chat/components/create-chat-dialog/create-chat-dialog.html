@@ -16,7 +16,7 @@
       />
 
       <label class="field-label" for="chat-type">Type</label>
-      <select id="chat-type" [(ngModel)]="type">
+      <select id="chat-type" [(ngModel)]="type" (change)="clearError()">
         @for (option of chatTypes; track option.value) {
           <option [value]="option.value">{{ option.label }}</option>
         }
