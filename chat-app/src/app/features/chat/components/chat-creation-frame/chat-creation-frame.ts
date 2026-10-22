@@ -23,7 +23,9 @@ export class ChatCreationFrame {
   chatTab = signal<ChatTab>(ChatTab.Groups);
   submitting = signal(false);
   errorMessage = signal('');
+
   dmComponent = viewChild(CreateDmDialog);
+  groupComponent = viewChild(CreateChatDialog);
 
   switchTab(selectedTab: ChatTab) {
     this.chatTab.set(selectedTab);
@@ -42,14 +44,18 @@ export class ChatCreationFrame {
         next: (chat) => {
           this.chatService.selectChat(chat);
           this.dialogRef.close(chat);
-        },
-        error: (err) => {
-          this.submitting.set(false);
-          this.errorMessage.set(err.error?.error ?? 'Could not start conversation.');
-        },
+        }
       });
     } else {
-
+      const payLoad = this.groupComponent()?.createPayload();
+      if (payLoad !== null && payLoad !== undefined) {
+        this.chatService.createChat(payLoad).subscribe({
+          next: (chat) =>{
+            this.chatService.selectChat(chat);
+            this.dialogRef.close();
+          }
+        });
+      }
     }
   }
 }

@@ -17,15 +17,12 @@ import { ChatCreationFrame } from '../chat-creation-frame/chat-creation-frame';
   styleUrl: './create-dm-dialog.scss',
 })
 export class CreateDmDialog {
-  private chatService = inject(ChatService);
   private userService = inject(UserService);
   private authService = inject(AuthService);
-  private dialogRef = inject(MatDialogRef<ChatCreationFrame>);
 
   private currentUser = toSignal(this.authService.currentUser$);
 
   searchTerm = signal('');
-  errorMessage = signal('');
   selectedUser = signal<User | undefined>(undefined);
   submitting = signal(false);
 

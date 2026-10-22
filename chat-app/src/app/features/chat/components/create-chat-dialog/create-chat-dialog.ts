@@ -5,7 +5,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { ChatService } from '../../services/chat-service';
 import { ColorPicker } from '../../../../shared/components/color-picker/color-picker';
 import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
-import { Chat, ChatType } from '../../models/chat';
+import { Chat, ChatType, CreateChatPayload } from '../../models/chat';
 import { User } from '../../../users/models/user';
 import { ChatCreationFrame } from '../chat-creation-frame/chat-creation-frame';
 
@@ -37,7 +37,7 @@ export class CreateChatDialog {
 
   constructor() {
     this.chatService.getAllUsers().subscribe({
-      next: users => this.users.set(users),
+      next: (users) => this.users.set(users),
       error: () => this.errorMessage.set('Could not load users.'),
     });
   }
@@ -56,36 +56,27 @@ export class CreateChatDialog {
     return this.selectedUserIds().has(id);
   }
 
-  submit() {
+  createPayload(): CreateChatPayload | null {
     this.errorMessage.set('');
+    const name = this.name.trim();
 
-    if (!this.name.trim()) {
+    if (!name) {
       this.errorMessage.set('Give the group a name.');
-      return;
+      return null;
     }
     if (this.type === 'PROTECTED_GROUP' && this.password.length < 4) {
       this.errorMessage.set('Password must be at least 4 characters.');
-      return;
+      return null;
     }
 
-    this.submitting.set(true);
-    this.chatService.createChat({
+    return {
       type: this.type,
-      name: this.name.trim(),
+      name,
       avatarColor: this.avatarColor,
-      ...(this.type === 'PROTECTED_GROUP' ? { password: this.password } : {}),
-      ...(this.type === 'PRIVATE_GROUP'
-        ? { participantIds: [...this.selectedUserIds()] }
-        : {}),
-    }).subscribe({
-      next: chat => {
-        this.submitting.set(false);
-        this.dialogRef.close(chat);
-      },
-      error: err => {
-        this.submitting.set(false);
-        this.errorMessage.set(err.error?.error ?? 'Could not create chat.');
-      },
-    });
+      ...(this.type === 'PROTECTED_GROUP' && { password: this.password }),
+      ...(this.type === 'PRIVATE_GROUP' && {
+        participantIds: [...this.selectedUserIds()],
+      }),
+    };
   }
 }
