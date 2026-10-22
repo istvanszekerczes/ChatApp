@@ -1,15 +1,17 @@
 <div class="button-container">
     <button
+        [class.active]="activeTab() === 'all'"
+        (click)="setTab(ChatTab.All)">
+        <span>All</span>
+    </button>
+    <button
         [class.active]="activeTab() === 'groups'"
-        (click)="setTab('groups')">
-        <mat-icon>group</mat-icon>
-        <span>Group Chats</span>
+        (click)="setTab(ChatTab.Groups)">
+        <span>Groups</span>
     </button>
     <button
         [class.active]="activeTab() === 'direct'"
-        (click)="setTab('direct')">
-        <mat-icon>person</mat-icon>
-        <span>Direct Messages</span>
+        (click)="setTab(ChatTab.Direct)">
+        <span>Direct</span>
     </button>
 </div>
-<div class="divider"></div>

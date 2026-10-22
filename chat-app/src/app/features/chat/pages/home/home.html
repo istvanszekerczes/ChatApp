@@ -5,15 +5,13 @@
     </button>
 
     <div class="sidebar-left-content">
-      <app-profile></app-profile>
+      <div class="sidebar-header">
+        <app-profile></app-profile>
+        <app-create-chat></app-create-chat>
+      </div>
       <app-chat-type-picker/>
-      <app-create-chat [mode]="activeTab()" />
       <div class="chat-container">
-        @if (activeTab() === 'groups') {
-          <app-group-chat-list></app-group-chat-list>
-        } @else {
-          <app-dm-list></app-dm-list>
-        }
+        <app-chat-list></app-chat-list>
       </div>
     </div>
   </div>

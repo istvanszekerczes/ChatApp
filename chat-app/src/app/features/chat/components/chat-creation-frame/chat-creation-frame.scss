@@ -1,0 +1,126 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.dialog {
+    display: flex;
+    flex-direction: column;
+    width: 420px;
+    max-width: 90vw;
+    max-height: 85vh;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: white;
+}
+.dialog-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    row-gap: 0.75rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+
+    h2 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+}
+
+.dialog-body {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    overflow-y: none;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.button-container {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.2rem;
+    background-color: var(--color-border);
+    padding: 0.2rem;
+    border-radius: 4px;
+    margin: auto;
+}
+
+.button-container button {
+    display: flex;
+    color: white;
+    flex: 1;
+    background-color: var(--color-border);
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+        justify-content: center;
+
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    gap: 0.5rem;
+
+    &:hover {
+        background-color: var(--color-border-hover);
+    }
+
+    &.active {
+        background-color: var(--color-border-hover);
+    }
+
+    mat-icon {
+        flex-shrink: 0;
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+    }
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: #888780;
+    cursor: pointer;
+    display: flex;
+    &:hover { color: white; }
+}
+.dialog-footer {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-top: 1px solid var(--color-border);
+
+    button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+    }
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #888780;
+
+    &:hover { color: white; }
+}
+
+.btn-primary {
+    background-color: #3b82f6;
+    color: white;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
