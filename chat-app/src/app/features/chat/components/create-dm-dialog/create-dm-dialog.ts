@@ -25,8 +25,9 @@ export class CreateDmDialog {
   private currentUser = toSignal(this.authService.currentUser$);
 
   searchTerm = signal('');
-  submitting = signal(false);
   errorMessage = signal('');
+  selectedUser = signal<User | undefined>(undefined);
+  submitting = signal(false);
 
   readonly candidates = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
@@ -36,21 +37,12 @@ export class CreateDmDialog {
       .filter(u => !term || u.username.toLowerCase().includes(term));
   });
 
-  close() {
-    this.dialogRef.close();
+  selectUser(user: User) {
+    if (user === this.selectedUser()) return;
+    this.selectedUser.set(user);
   }
 
-  start(user: User) {
-    this.submitting.set(true);
-    this.chatService.createDirectChat(user.id).subscribe({
-      next: chat => {
-        this.chatService.selectChat(chat);
-        this.dialogRef.close(chat);
-      },
-      error: err => {
-        this.submitting.set(false);
-        this.errorMessage.set(err.error?.error ?? 'Could not start conversation.');
-      },
-    });
+  getSelectedUser() {
+    return this.selectedUser();
   }
 }

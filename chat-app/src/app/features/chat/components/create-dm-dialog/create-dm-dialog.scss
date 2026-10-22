@@ -73,10 +73,14 @@
     text-align: left;
     cursor: pointer;
 
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not(.active) {
         background-color: var(--color-border);
     }
+    &.active {
+        background-color: var(--color-border-hover);
+    }
 }
+
 
 .avatar {
     width: 28px;
