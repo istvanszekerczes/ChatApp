@@ -9,7 +9,7 @@ import { JoinChatDialog } from '../components/join-chat-dialog/join-chat-dialog'
 import { MatDialog } from '@angular/material/dialog';
 import { ChatStore } from '../store/chat-store';
 import { PanelService } from '../../../core/services/panel-service';
-import { ChatTab } from '../components/chat-type-picker/chat-type-picker';
+import { ChatTab } from '../models/chat';
 
 @Service()
 export class ChatService {
@@ -39,8 +39,8 @@ export class ChatService {
 
   private panelService = inject(PanelService);
   
-  activeFilter = signal<ChatType>('PUBLIC_GROUP');
-  activeTab = signal<ChatTab>('groups');
+  activeFilter = signal<ChatType>(null);
+  activeTab = signal<ChatTab>(ChatTab.All);
   /**
    * Selects a chat to view its messages and participants.
    *

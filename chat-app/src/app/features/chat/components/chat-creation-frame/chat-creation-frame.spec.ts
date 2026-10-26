@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DmList } from './dm-list';
+import { ChatCreationFrame } from './chat-creation-frame';
 
-describe('DmList', () => {
-  let component: DmList;
-  let fixture: ComponentFixture<DmList>;
+describe('ChatCreationFrame', () => {
+  let component: ChatCreationFrame;
+  let fixture: ComponentFixture<ChatCreationFrame>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DmList],
+      imports: [ChatCreationFrame],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DmList);
+    fixture = TestBed.createComponent(ChatCreationFrame);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
