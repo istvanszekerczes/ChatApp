@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth-service';
 import { ColorPicker } from '../../../../shared/components/color-picker/color-picker';
 import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
@@ -14,6 +14,7 @@ import { InitialPipe } from '../../../../shared/pipes/initial-pipe';
 })
 export class Profile {
   authService = inject(AuthService);
+  router = inject(Router);
   currentUser$ = this.authService.currentUser$;
 
   pickerOpen = false;
@@ -27,6 +28,7 @@ export class Profile {
 
   onLogout() {
     this.authService.logout().subscribe();
+    this.router.navigate(['/login']);
   }
 
   togglePicker(event: MouseEvent) {
