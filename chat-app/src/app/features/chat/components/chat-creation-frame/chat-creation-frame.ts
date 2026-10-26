@@ -41,7 +41,7 @@ export class ChatCreationFrame {
       this.submitting.set(true);
       this.chatService.createDirectChat(user.id).subscribe({
         next: (chat) => {
-          this.chatService.selectChat(chat);
+          this.chatService.openDirectChat(user.id);
           this.dialogRef.close(chat);
         }
       });
