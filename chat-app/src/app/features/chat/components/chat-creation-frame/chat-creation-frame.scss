@@ -116,11 +116,15 @@
 }
 
 .btn-primary {
-    background-color: #3b82f6;
+    background-color: var(--color-prefered);
     color: white;
 
     &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+    }
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-prefered) 85%, white);
     }
 }

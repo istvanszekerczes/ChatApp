@@ -73,7 +73,13 @@
     font-size: 1.1rem;
     user-select: none;
     cursor: pointer;
+    background-color: var(--color-prefered);
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-prefered) 85%, white);
+    }
   }
+  
 
   .username {
     flex: 1;
