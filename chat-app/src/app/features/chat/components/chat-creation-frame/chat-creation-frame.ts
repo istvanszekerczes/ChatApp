@@ -6,7 +6,7 @@ import { ChatTab } from '../../models/chat';
 import { CreateChatDialog } from '../create-chat-dialog/create-chat-dialog';
 import { CreateDmDialog } from '../create-dm-dialog/create-dm-dialog';
 import { ChatService } from '../../services/chat-service';
-
+import { EMPTY, first, merge, mergeWith } from 'rxjs';
 @Component({
   selector: 'app-chat-creation-frame',
   imports: [MatIconModule, CreateChatDialog, CreateDmDialog],
@@ -21,7 +21,6 @@ export class ChatCreationFrame {
 
   chatTab = signal<ChatTab>(ChatTab.Groups);
   submitting = signal(false);
-  errorMessage = signal('');
 
   dmComponent = viewChild(CreateDmDialog);
   groupComponent = viewChild(CreateChatDialog);
@@ -29,32 +28,24 @@ export class ChatCreationFrame {
   switchTab(selectedTab: ChatTab) {
     this.chatTab.set(selectedTab);
   }
-  
+
   close() {
     this.dialogRef.close();
   }
 
   submit() {
-    if (this.chatTab() === ChatTab.Direct) {
-      const user = this.dmComponent()?.getSelectedUser();
-      if (!user) return;
-      this.submitting.set(true);
-      this.chatService.createDirectChat(user.id).subscribe({
-        next: (chat) => {
-          this.chatService.selectChat(chat);
-          this.dialogRef.close(chat);
-        }
-      });
-    } else {
-      const payLoad = this.groupComponent()?.createPayload();
-      if (payLoad !== null && payLoad !== undefined) {
-        this.chatService.createChat(payLoad).subscribe({
-          next: (chat) =>{
-            this.chatService.selectChat(chat);
-            this.dialogRef.close();
-          }
-        });
-      }
-    }
+    this.submitting.set(true);
+
+    const isDirect = this.chatTab() === ChatTab.Direct;
+    const user = this.dmComponent()?.getSelectedUser();
+    const payload = this.groupComponent()?.createPayload();
+
+    const direct$ = isDirect && user ? this.chatService.createDirectChat(user.id) : EMPTY;
+    const group$ = !isDirect && payload ? this.chatService.createChat(payload) : EMPTY;
+
+    direct$.pipe(mergeWith(group$), first()).subscribe((chat) => {
+      this.chatService.selectChat(chat);
+      this.dialogRef.close(chat);
+    });
   }
 }
