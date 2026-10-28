@@ -1,0 +1,33 @@
+<div class="dialog">
+  <header class="dialog-header">
+    <h2>New chat</h2>
+    <button class="btn-icon" (click)="close()" aria-label="Close">
+      <mat-icon>close</mat-icon>
+    </button>
+    <div class="button-container">
+      <button [class.active]="chatTab() === ChatTab.Groups" (click)="switchTab(ChatTab.Groups)">
+        <mat-icon>group</mat-icon>
+        <span>Group Chats</span>
+      </button>
+      <button [class.active]="chatTab() === ChatTab.Direct" (click)="switchTab(ChatTab.Direct)">
+        <mat-icon>person</mat-icon>
+        <span>Direct Messages</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="dialog-body">
+    @if (chatTab() === ChatTab.Groups) {
+      <app-create-chat-dialog></app-create-chat-dialog>
+    } @else {
+      <app-create-dm-dialog></app-create-dm-dialog>
+    }
+  </div>
+
+  <footer class="dialog-footer">
+    <button class="btn-secondary" (click)="close()">Cancel</button>
+    <button class="btn-primary" [disabled]="submitting()" (click)="submit()">
+      {{ submitting() ? 'Creating…' : 'New chat' }}
+    </button>
+  </footer>
+</div>

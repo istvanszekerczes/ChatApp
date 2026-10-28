@@ -3,6 +3,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateChatDialog } from '../create-chat-dialog/create-chat-dialog';
 import { CreateDmDialog } from '../create-dm-dialog/create-dm-dialog';
+import { ChatCreationFrame } from '../chat-creation-frame/chat-creation-frame';
 
 @Component({
   selector: 'app-create-chat',
@@ -21,7 +22,7 @@ export class CreateChat {
     if (this.mode() === 'direct') {
       this.dialog.open(CreateDmDialog, config);
     } else {
-      this.dialog.open(CreateChatDialog, config);
+      this.dialog.open(ChatCreationFrame, config);
     }
   }
 }

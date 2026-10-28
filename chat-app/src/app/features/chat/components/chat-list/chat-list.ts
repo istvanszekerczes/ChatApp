@@ -1,18 +1,19 @@
-import { Component, inject, signal, computed, effect } from '@angular/core';
+import { Component, inject, signal, computed, effect, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ChatService } from '../../services/chat-service';
 import { Chat, ChatType } from '../../models/chat';
 import { ChatItem } from '../chat-item/chat-item';
 import { Router } from '@angular/router';
+import { ChatDatasource } from '../../services/chat-datasource';
 
 @Component({
-  selector: 'app-group-chat-list',
+  selector: 'app-chat-list',
   imports: [MatIconModule, FormsModule, ChatItem],
-  templateUrl: './group-chat-list.html',
-  styleUrl: './group-chat-list.scss',
+  templateUrl: './chat-list.html',
+  styleUrl: './chat-list.scss',
 })
-export class GroupChatList {
+export class ChatList {
   private chatService = inject(ChatService);
 
   readonly loading = this.chatService.loading;
@@ -20,20 +21,31 @@ export class GroupChatList {
   private router = inject(Router);
   activeFilter = this.chatService.activeFilter;
   searchTerm = signal('');
+  activeTab = this.chatService.activeTab;
+  private previousTab = this.activeTab();
 
-  visibleChats = computed(() => {
-    const filter = this.activeFilter();
-    const term = this.searchTerm().trim().toLowerCase();
+  private chatDatasource = inject(ChatDatasource);
 
-    return this.chatService.chats().filter((chat) => {
-      if (chat.type !== filter) return false;
-      if (term && !(chat.name ?? '').toLowerCase().includes(term)) return false;
-      return true;
+  constructor() {
+    effect(() => {
+      const tab = this.activeTab();
+      if (tab === this.previousTab) return;
+      this.previousTab = tab;
+
+      untracked(() => {
+        this.activeFilter.set(null);
+        this.closeIfHidden();
+      });
     });
-  });
+  }
 
+  visibleChats = computed(() => this.chatDatasource.getVisibleChats(this.searchTerm()));
+  
   setFilter(type: ChatType) {
-    if (this.activeFilter() === type) return;
+    if (this.activeFilter() === type) {
+      this.activeFilter.set(null);
+      return;
+    }
     this.router.navigate(['']);
     this.chatService.closeActiveChat();
     this.activeFilter.set(type);
@@ -54,7 +66,6 @@ export class GroupChatList {
     if (chat.id === this.chatService.activeChatId()) {
       return;
     }
-    this.chatService.activeFilter.set(chat.type);
     this.chatService.closeActiveChat();
     this.router.navigate(['/chat', chat.id]);
   }

@@ -4,7 +4,9 @@
             {{ chat.name | initial }}
         </span>
         <span class="chat-title">{{ chat.name }}</span>
-        <span class="chat-type">{{ typeLabels[chat.type] }}</span>
+        @if (chat.type) {
+            <span class="chat-type">{{ typeLabels[chat.type] }}</span>
+        }        
         @if (chat.type === 'PRIVATE_GROUP' || chat.type === 'PROTECTED_GROUP') {
             <span class="chat-members">{{ chat.participantCount }} members</span>
         }
