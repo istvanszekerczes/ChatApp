@@ -199,7 +199,9 @@ export class ChatService {
   createDirectChat(targetId: string): Observable<Chat> {
     return this.backendCommunicator.createDirectChat(targetId).pipe(
       map((r) => r.chat),
-      tap((chat) => this.upsert(chat)),
+      tap((chat) => {
+        (this.upsert(chat), this.router.navigate(['/chat', chat.id]));
+      }),
     );
   }
 
