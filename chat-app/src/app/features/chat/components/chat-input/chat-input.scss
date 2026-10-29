@@ -10,7 +10,7 @@
     transition: border-color 0.2s ease;
 
     &:focus-within {
-        border-color: var(--color-border-hover);
+        border-color: var(--color-prefered);
     }
 
     textarea {

@@ -13,12 +13,12 @@
   color: white;
   background-color: var(--color-surface);
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  background-color: var(--color-prefered);
 
   &:hover {
-    background-color: var(--color-border-hover);
+    background-color: color-mix(in srgb, var(--color-prefered) 85%, white);
   }
 
   mat-icon {

@@ -1,11 +1,20 @@
-import { inject } from '@angular/core';
-import { signalStore, withMethods, withState, patchState, withProps } from '@ngrx/signals';
+import { computed, inject, effect } from '@angular/core';
+import {
+  signalStore,
+  withMethods,
+  withState,
+  patchState,
+  withProps,
+  withComputed,
+  withHooks,
+} from '@ngrx/signals';
 import { User } from '../../users/models/user';
 import { BackendCommunicator } from '../../../core/services/backend-communicator';
 import { withDevtools } from '@angular-architects/ngrx-toolkit';
 import { map, tap, of, catchError, Observable, pipe, switchMap } from 'rxjs';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { tapResponse } from '@ngrx/operators';
+import { DOCUMENT } from '@angular/common';
 
 type UserState = {
   currentUser: User | null;
@@ -25,6 +34,9 @@ export const UserStore = signalStore(
   withDevtools('users'),
   withProps(() => ({
     backendCommunicator: inject(BackendCommunicator),
+  })),
+  withComputed((store) => ({
+    avatarColor: computed(() => store.currentUser()?.avatarColor),
   })),
   withMethods(({ backendCommunicator, ...store }) => ({
     loadUsers: rxMethod<void>(
@@ -143,4 +155,16 @@ export const UserStore = signalStore(
       ),
     ),
   })),
+  withHooks({
+    onInit(store) {
+      const root = inject(DOCUMENT).documentElement;
+
+      effect(() => {
+        const color = store.avatarColor();
+        if (color) {
+          root.style.setProperty('--color-prefered', color);
+        }
+      });
+    },
+  }),
 );

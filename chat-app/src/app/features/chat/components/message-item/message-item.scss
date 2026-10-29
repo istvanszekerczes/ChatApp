@@ -10,7 +10,7 @@
     flex-direction: row-reverse;
 
     .bubble {
-        background-color: var(--color-surface-deep);
+        background-color: color-mix(in srgb, var(--color-prefered) 65%, black);
         align-items: flex-end;
     }
 }
